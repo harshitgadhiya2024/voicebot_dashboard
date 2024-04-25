@@ -1,0 +1,592 @@
+"""
+    In this file handling all flask api route and maintain all of operation and sessions
+"""
+
+import os
+import random
+import uuid
+from datetime import datetime, timedelta
+from functools import wraps
+from PIL import Image
+import jwt
+from flask import (flash, Flask, redirect, render_template, request,
+                   session, url_for, send_file, jsonify)
+from flask_cors import CORS
+from flask_mail import Mail
+from string import ascii_uppercase
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+
+from constant import constant_data
+from operations.common_func import (password_validation, validate_phone_number, logger_con, sending_email_mail)
+from operations.mongo_connection import (mongo_connect, data_added, find_all_data, find_spec_data, update_mongo_data)
+import json, requests
+import pandas as pd
+
+secreat_id = uuid.uuid4().hex
+
+# create a flask app instance
+app = Flask(__name__)
+
+# Apply cors policy in our app instance
+CORS(app)
+
+# setup all config variable
+app.config["enviroment"] = constant_data.get("enviroment", "dev")
+app.config["SECRET_KEY"] = secreat_id
+app.config['MAIL_SERVER'] = constant_data["mail_configuration"].get("server_host")
+app.config['MAIL_PORT'] = int(constant_data["mail_configuration"].get("server_port"))
+app.config['MAIL_USERNAME'] = constant_data["mail_configuration"].get("server_username")
+app.config['MAIL_PASSWORD'] = constant_data["mail_configuration"].get("server_password")
+app.config['MAIL_USE_SSL'] = True
+app.config["userbase_recording"] = {}
+
+# handling our application secure type like http or https
+secure_type = constant_data["secure_type"]
+
+# create mail instance for our application
+mail = Mail(app)
+
+# logger & MongoDB connection
+# logger_con(app=app)
+client = mongo_connect(app=app)
+db = client["voicebot"]
+
+# allow only that image file extension
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif' 'svg'}
+
+def allowed_photos(filename):
+    """
+    checking file extension is correct or not
+
+    :param filename: file name
+    :return: True, False
+    """
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def calling_happens(voice_file_id, numbers, max_retry, campaign_name,retry_wait_time):
+    try:
+        print("coming to call api")
+        url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}"
+
+        payload = json.dumps({})
+        headers = {
+            'Authorization': 'Bearer 356950|bF0Z79Rj0BDUWcklS3uXTjPWqzqC9QBXbEkKwOuY',
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+
+        print(response.text)
+
+    except Exception as e:
+        print(e)
+
+def token_required(func):
+    # decorator factory which invoks update_wrapper() method and passes decorated function as an argument
+    @wraps(func)
+    def decorated(*args, **kwargs):
+        login_dict = session.get("login_dict", "available")
+        # token = app.config["mapping_user_dict"].get(login_dict.get("id", "nothing"), {}).get("token", False)
+        if login_dict == "available":
+            app.logger.debug("please first login in your app...")
+            flash("Please login first...", "danger")
+            return redirect(url_for('login', _external=True, _scheme=secure_type))
+        return func(*args, **kwargs)
+    return decorated
+
+def convert_to_webp(input_image_path, output_image_path):
+    # Open the image file
+    with Image.open(input_image_path) as img:
+        # Convert the image to WebP format
+        img.save(output_image_path, 'WEBP')
+
+    return "complete"
+
+def generate_token(username):
+    try:
+        expiration_time = datetime.now() + timedelta(minutes=30)
+        payload = {
+            'username': username,
+            'exp': expiration_time
+        }
+        token = jwt.encode(payload, app.config["SECRET_KEY"], algorithm='HS256')
+        return token
+    except Exception as e:
+        app.logger.debug(f"error in generate token {e}")
+
+############################ Login operations ##################################
+
+@app.route("/", methods=["GET", "POST"])
+def login():
+    """
+    In this route we can handling student, teacher and admin login process
+    :return: login template
+    """
+    try:
+        app.logger.debug("coming in login api route")
+        login_dict = session.get("login_dict", "nothing")
+        if login_dict != "nothing":
+            return redirect(url_for('dashboard', _external=True, _scheme=secure_type))
+
+        if request.method == "POST":
+            email = request.form["email"]
+            password = request.form["password"]
+
+            di = {"username": email}
+            di_email = {"email": email}
+            user_all_data = find_spec_data(app, db, "user_data", di)
+            user_email_data = find_spec_data(app, db, "user_data", di_email)
+            user_all_data = list(user_all_data)
+            user_email_data = list(user_email_data)
+
+            if len(user_all_data) == 0 and len(user_email_data) == 0:
+                flash("Please use correct credential..", "danger")
+                return render_template("auth/login.html")
+            elif len(user_all_data)>0:
+                user_all_data = user_all_data[0]
+                if check_password_hash(user_all_data["password"], password):
+                    username = user_all_data["username"]
+                    email = user_all_data["email"]
+                    user_id = user_all_data["user_id"]
+                    token = user_all_data["token"]
+                    session["login_dict"] = {"username": username, "email": email, "user_id": user_id, "token": token}
+                    app.logger.debug(f"Login Dict in session: {session.get('login_dict')}")
+                    return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
+                else:
+                    flash("Please use correct credential..", "danger")
+                    return render_template("auth/login.html")
+            else:
+                user_email_data = user_email_data[0]
+                if check_password_hash(user_email_data["password"], password):
+                    username = user_email_data["username"]
+                    email = user_email_data["email"]
+                    user_id = user_email_data["user_id"]
+                    token = user_email_data["token"]
+                    session["login_dict"] = {"username": username, "email": email, "user_id": user_id, "token": token}
+                    app.logger.debug(f"Login Dict in session: {session.get('login_dict')}")
+                    return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
+                else:
+                    flash("Please use correct credential..", "danger")
+                    return render_template("auth/login.html")
+
+        else:
+            return render_template("auth/login.html")
+
+    except Exception as e:
+        app.logger.debug(f"Error in login route: {e}")
+        flash("Please try again...", "danger")
+        return redirect(url_for('login', _external=True, _scheme=secure_type))
+
+@app.route("/otp_verification", methods=["GET", "POST"])
+def otp_verification():
+    """
+    That funcation can use otp_verification and new_password set link generate
+    """
+
+    try:
+        email = session.get("otp_dict", {}).get("email", "")
+        if request.method == "POST":
+            get_otp = request.form["otp"]
+            get_otp = int(get_otp)
+            send_otp = session.get("otp", "")
+            if get_otp:
+                login_dict = session.get("login_dict", "nothing")
+                type = login_dict["type"]
+                flash("Login Successfully...", "success")
+                return redirect(url_for(f'{type}_dashboard', _external=True, _scheme=secure_type))
+            else:
+                flash("OTP is wrong. Please enter correct otp...", "danger")
+                return render_template("authentication/otp_verification.html")
+        else:
+            if email:
+                otp = random.randint(100000, 999999)
+                session["otp"] = otp
+                server_host = app.config['MAIL_SERVER']
+                server_port = app.config['MAIL_PORT']
+                server_username = app.config['MAIL_USERNAME']
+                server_password = app.config['MAIL_PASSWORD']
+                subject_title = "OTP Received"
+                mail_format = f"Hello There,\n We hope this message finds you well. As part of our ongoing commitment to ensure the security of your account, we have initiated a verification process.\nYour One-Time Password (OTP) for account verification is: [{otp}]\nPlease enter this OTP on the verification page to complete the process. Note that the OTP is valid for a limited time, so we recommend entering it promptly.\nIf you did not initiate this verification or have any concerns regarding your account security, please contact our support team immediately at help@codescatter.com\n\nThank you for your cooperation.\nBest regards,\nCodescatter"
+                html_format = f'<p>Hello There,</p><p>We hope this message finds you well. As part of our ongoing commitment to ensure the security of your account, we have initiated a verification process.</p><p>Your One-Time Password (OTP) for account verification is: <h2><b>{otp}</h2></b></p><p>Please enter this OTP on the verification page to complete the process. Note that the OTP is valid for a limited time, so we recommend entering it promptly.</p><p>If you did not initiate this verification or have any concerns regarding your account security, please contact our support team immediately at help@codescatter.com</p><p>Thank you for your cooperation.</p><p>Best regards,<br>Codescatter</p>'
+                attachment_all_file = []
+                # sending_email_mail(app, [email], subject_title, mail_format, html_format, server_username,
+                #                    server_password, server_host, int(server_port), attachment_all_file)
+            return render_template("authentication/otp_verification.html")
+
+    except Exception as e:
+        app.logger.debug(f"Error in otp verification route: {e}")
+        flash("Please try again...", "danger")
+        return redirect(url_for('otp_verification', _external=True, _scheme=secure_type))
+
+@app.route("/forgot_password", methods=["GET", "POST"])
+def forgot_password():
+    """
+    Handling teacher register process
+    :return: teacher register template
+    """
+    try:
+        db = client["college_management"]
+        if request.method == "POST":
+            email = request.form["email"]
+            all_login_data = find_spec_data(app, db, "login_mapping", {"email": email})
+            all_login_data = list(all_login_data)
+            if len(all_login_data)==0:
+                flash("Entered email does not exits Please try with different mail...", "danger")
+                return render_template("authentication/forgat-password.html")
+            else:
+                login_data = list(all_login_data)[0]
+                type = login_data.get("type", "student")
+                id_data = login_data.get("username", "")
+
+                server_host = app.config['MAIL_SERVER']
+                server_port = app.config['MAIL_PORT']
+                server_username = app.config['MAIL_USERNAME']
+                server_password = app.config['MAIL_PASSWORD']
+                subject_title = "OTP Received"
+                mail_format = f"Hello There,\n I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.\nTo reset your password,\nplease follow the link below: \nClick Here \nPlease note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.\nIf you continue to experience issues or did not request a password reset, please contact our support team for further assistance.\nThank you for using Website.\n\nBest regards,\nHarshit Gadhiya"
+                html_format = f"<p>Hello There,</p><p> I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.</p><p>To reset your password,</p><p>please follow the link below: </p><p><a href='http://127.0.0.1:5000/update_password?id={type}-*{id_data}'><b>Click Here</b></a></p><p>Please note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.</p><p>If you continue to experience issues or did not request a password reset, please contact our support team for further assistance.</p><p>Thank you for using the Website.</p><br><p>Best regards,<br>Harshit Gadhiya</p>"
+                attachment_all_file = []
+                sending_email_mail(app, [email], subject_title, mail_format, html_format, server_username,
+                                   server_password, server_host, int(server_port), attachment_all_file)
+                flash("Reset password mail sent successfully...", "success")
+                return render_template("authentication/forgot-password.html")
+        else:
+            return render_template("authentication/forgot-password.html")
+
+    except Exception as e:
+        app.logger.debug(f"Error in add teacher data route: {e}")
+        flash("Please try again...","danger")
+        return redirect(url_for('student_mail', _external=True, _scheme=secure_type))
+
+@app.route("/update_password", methods=["GET", "POST"])
+def update_password():
+    """
+    Handling teacher register process
+    :return: teacher register template
+    """
+    try:
+        db = client["college_management"]
+        id = request.args.get("id", "nothing")
+        if request.method == "POST":
+            id = session["data_id"]
+            spliting_obj = id.split("-*")
+            username_data = spliting_obj[-1]
+            type = spliting_obj[0]
+            password = request.form["password"]
+            con_password = request.form["con_password"]
+            if not password_validation(app=app, password=password):
+                flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
+                return render_template("forgat-password.html", password=password, con_password=con_password)
+
+            if not password_validation(app=app, password=con_password):
+                flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
+                return render_template("forgat-password.html", password=password, con_password=con_password)
+
+            if password==con_password:
+                password = generate_password_hash(password)
+                condition_dict = {"type": type, "username": username_data}
+                update_mongo_data(app, db, "user_data", condition_dict, {"password": password})
+                update_mongo_data(app, db, "login_mapping", condition_dict, {"password": password})
+                flash("Password Reset Successfully...", "success")
+                return redirect(url_for('login', _external=True, _scheme=secure_type))
+            else:
+                flash("Password or Confirmation Password Does Not Match. Please Enter Correct Details", "danger")
+                return render_template("forgat-password.html", password=password, con_password=con_password)
+        else:
+            session["data_id"] = id
+            return render_template("authentication/update_password.html", id=id)
+
+    except Exception as e:
+        app.logger.debug(f"Error in add teacher data route: {e}")
+        flash("Please try again...","danger")
+        return redirect(url_for('student_mail', _external=True, _scheme=secure_type))
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    """
+    That funcation was logout session and clear user session
+    """
+
+    try:
+        session.clear()
+        app.logger.debug(f"session is {session}")
+        return redirect(url_for('login', _external=True, _scheme=secure_type))
+
+    except Exception as e:
+        app.logger.debug(f"error is {e}")
+        return redirect(url_for('login', _external=True, _scheme=secure_type))
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    try:
+        if request.method=="POST":
+            fullname = request.form["fullname"]
+            username = request.form["username"]
+            phone = request.form["phone"]
+            company_name = request.form["company_name"]
+            email = request.form["email"]
+            password = request.form["password"]
+
+            spliting_email = email.split("@")[-1]
+            if "." not in spliting_email:
+                flash("Email is not valid...", "danger")
+                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                                       email=email, password=password)
+            
+            all_user_data = find_all_data(app, db, "user_data")
+            get_all_username = [user_data["username"] for user_data in all_user_data]
+            if username in get_all_username:
+                flash("Username already exits...", "danger")
+                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                                       email=email, password=password)
+            
+            all_email_data = find_all_data(app, db, "user_data")
+            get_all_email = [user_data["email"] for user_data in all_email_data]
+            if email in get_all_email:
+                flash("Email already exits...", "danger")
+                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                                       email=email, password=password)
+            
+            if not password_validation(app=app, password=password):
+                flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
+                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                                       email=email, password=password)
+            
+            get_phone_val = validate_phone_number(app=app, phone_number=phone)
+            if get_phone_val == "invalid number":
+                flash("Please enter correct contact no.", "danger")
+                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                                       email=email, password=password)
+            
+            password = generate_password_hash(password)
+            all_user_data = find_all_data(app, db, "user_data")
+            get_all_userid = [user_data["user_id"] for user_data in all_user_data]    
+
+            flag = True
+            while flag:
+                user_id = random.randint(1000000000000000, 9999999999999999)
+                if str(user_id) not in get_all_userid:
+                    flag = False
+
+            register_dict = {
+                "user_id": user_id,
+                "fullname": fullname,
+                "username": username,
+                "email": email,
+                "phone_number": phone,
+                "password": password,
+                "company_name": company_name,
+                "status": "activate",
+                "token": 10
+            }  
+            app.config["userbase_recording"][username]={}
+            app.config["userbase_recording"][username]["last_number"] = 1
+
+            data_added(app, db, "user_data", register_dict) 
+            flash("Register Successfully...", "success")  
+            return redirect("/")       
+        else:
+            return render_template("auth/register.html")
+
+    except Exception as e:
+        app.logger.debug(f"Error in register route: {e}")
+        flash("Please try again...", "danger")
+        return redirect(url_for('register', _external=True, _scheme=secure_type))
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+@token_required
+def dashboard():
+    try:
+        return render_template("user/index.html")
+
+    except Exception as e:
+        app.logger.debug(f"error is {e}")
+        return redirect(url_for('login', _external=True, _scheme=secure_type))
+    
+@app.route('/save_audio', methods=['GET', 'POST'])
+@token_required
+def save_audio():
+    try:
+        data_status = "no_data"
+        login_dict = session.get("login_dict", {})
+        username = login_dict["username"]
+        last_number = 1
+        try:
+            last_number = app.config["userbase_recording"][username]["last_number"]
+        except:
+            pass
+
+        audio_file = request.files['audio']
+        userfile_name = username+str(last_number)+".wav"
+        filename = f"static/uploaded_audio/{userfile_name}"
+        app.config["userbase_recording"][username] = {}
+        app.config["userbase_recording"][username]["last_number"] = last_number+1
+        audio_file.save(filename)
+
+        register_dict = {
+            "user_id": login_dict["user_id"],
+            "audio_id": "pending",
+            "audio_file": filename,
+            "status": "pending",
+            "file_status": "active"
+        }
+
+        data_added(app, db, "audio_store", register_dict)
+        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+        all_audio_list = []
+        for var in all_audio_data:
+            if var["file_status"] == "active":
+                del var["_id"]
+                all_audio_list.append(var)
+        
+        if len(all_audio_list)!=0:
+            data_status = "data"
+
+        flash("Record audio uploaded successfully")
+
+        return render_template("user/audio_data.html", all_audio_list=all_audio_list,data_status=data_status)
+
+    except Exception as e:
+        app.logger.debug(f"error in save audio route {e}")
+        return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
+
+@app.route('/upload_audio_file', methods=['GET', 'POST'])
+@token_required
+def upload_audio_file():
+    try:
+        data_status = "no_data"
+        login_dict = session.get("login_dict", {})
+        username = login_dict["username"]
+        last_number = 1
+        try:
+            last_number = app.config["userbase_recording"][username]["last_number"]
+        except:
+            pass
+
+        audio_file = request.files['fileupload']
+        userfile_name = username+str(last_number)+".wav"
+        filename = f"static/uploaded_audio/{userfile_name}"
+        app.config["userbase_recording"][username] = {}
+        app.config["userbase_recording"][username]["last_number"] = last_number+1
+        audio_file.save(filename)
+
+        register_dict = {
+            "user_id": login_dict["user_id"],
+            "audio_id": "pending",
+            "audio_file": filename,
+            "status": "pending",
+            "file_status": "active"
+        }
+
+        data_added(app, db, "audio_store", register_dict)
+        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+        all_audio_list = []
+        for var in all_audio_data:
+            if var["file_status"] == "active":
+                del var["_id"]
+                all_audio_list.append(var)
+        
+        if len(all_audio_list)!=0:
+            data_status = "data"
+
+        flash("Record audio uploaded successfully")
+
+        return render_template("user/audio_data.html", all_audio_list=all_audio_list,data_status=data_status)
+
+    except Exception as e:
+        app.logger.debug(f"error in save audio route {e}")
+        return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
+
+@app.route('/upload_audio', methods=['GET', 'POST'])
+@token_required
+def upload_audio():
+    try:
+        login_dict = session.get("login_dict", {})
+        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+        all_audio_list = []
+        data_status = "no_data"
+        for var in all_audio_data:
+            if var["file_status"] == "active":
+                del var["_id"]
+                all_audio_list.append(var)
+
+        if len(all_audio_list)!=0:
+            data_status = "data"
+
+        return render_template("user/audio_data.html", all_audio_list=all_audio_list, data_status=data_status)
+
+    except Exception as e:
+        app.logger.debug(f"error in upload audio route {e}")
+        return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
+    
+@app.route('/bulk_calling', methods=['GET', 'POST'])
+@token_required
+def bulk_calling():
+    try:
+        login_dict = session.get("login_dict", {})
+        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+        all_audio_ids = []
+        for var in all_audio_data:
+            if var["file_status"] == "active":
+                all_audio_ids.append(var["audio_id"])
+        if request.method=="POST":
+            campaign_name = request.form["campaign_name"]
+            voiceid = request.form["voiceid"]
+            numberfile = request.files['numberfile']
+            max_retry = request.form["max_retry"]
+            retry_time = request.form["retry_time"]
+            voiceid = "83574"
+            print("all data fetched")
+
+            file_name = numberfile.filename
+            filepath = f"static/upload/{file_name}"
+            numberfile.save(filepath)
+            print("file save successfully")
+            exten = file_name.split(".")[-1]
+            if exten=="csv":
+                df = pd.read_csv(filepath)
+            else:
+                df = pd.read_excel(filepath)
+            
+
+            all_numbers = list(df["numbers"])
+            all_numbers_string = ""
+            for var in all_numbers:
+                all_numbers_string+=f",{var}"
+
+            calling_happens(voiceid, all_numbers_string, max_retry, campaign_name, retry_time)
+            print("completed")
+            return render_template("user/calling_system.html", all_audio_ids=all_audio_ids)
+        else:
+            return render_template("user/calling_system.html", all_audio_ids=all_audio_ids)
+        # all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+        # all_audio_list = []
+        # data_status = "no_data"
+        # for var in all_audio_data:
+        #     if var["file_status"] == "active":
+        #         del var["_id"]
+        #         all_audio_list.append(var)
+
+        # if len(all_audio_list)!=0:
+        #     data_status = "data"
+
+
+    except Exception as e:
+        app.logger.debug(f"error in upload audio route {e}")
+        return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
+    
+@app.route('/sample_file', methods=['GET', 'POST'])
+def sample_file():
+    try:
+        server_file_name = "static/sample_file/sample_number_file.csv"
+        file = os.path.abspath(server_file_name)
+        return send_file(file, as_attachment=True)
+
+    except Exception as e:
+        app.logger.debug(f"error in sample file download {e}")
+        return redirect(url_for('sample_file', _external=True, _scheme=secure_type))
+
+  
+if __name__ == '__main__':
+    app.run(debug=True)

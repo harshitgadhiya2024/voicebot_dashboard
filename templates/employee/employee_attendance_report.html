@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Company Dashboard</title>
+    <!-- Include Tailwind CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+    href="https://cdn.jsdelivr.net/npm/remixicon@4.2.0/fonts/remixicon.css"
+    rel="stylesheet"
+/>
+    <style>
+      /* Custom Styles */
+      /* Gradient Background */
+      body {
+        background: linear-gradient(to right, #102c57, #102c57, #102c57);
+        color: #fefaf6;
+      }
+      /* Glass morphism effect */
+      .glass {
+        background: rgba(254, 250, 246, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(234, 219, 200, 0.3);
+        box-shadow: 0 8px 32px 0 rgba(16, 44, 87, 0.37);
+      }
+      /* Sidebar */
+      #sidebar {
+        background: linear-gradient(to bottom, #102c57, #102c57);
+      }
+      /* Sidebar Menu Link */
+      #sidebar a {
+        color: #fefaf6;
+      }
+      /* Employee Card Background */
+      .employee-card {
+        background-color: rgb(16 44 87);
+      }
+      /* Table Header */
+      .table-header {
+        background-color: #102c57;
+        color: #fefaf6;
+      }
+      /* Table Row Background */
+      .table-row {
+        background-color: rgba(254, 250, 246, 0.1);
+      }
+      /* Fullscreen button */
+      #fullscreenBtn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        background-color: #102c57;
+        color: #fefaf6;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        cursor: pointer;
+      }
+
+      .ellipse-1,
+.ellipse-1 * {
+  box-sizing: border-box;
+}
+.ellipse-1 {
+  background: radial-gradient(
+    closest-side,
+    rgba(119, 23, 179, 1) 0%,
+    rgba(223, 9, 202, 1) 100%
+  );
+  border-radius: 50%;
+  width: 280px;
+  height: 280px;
+  position: absolute;
+  z-index: -1;
+  top: 1px;
+  right: 1px;
+}
+.ellipse-2,
+.ellipse-2 * {
+  box-sizing: border-box;
+}
+.ellipse-2 {
+  background: radial-gradient(
+    closest-side,
+    rgba(119, 23, 179, 1) 0%,
+    rgba(223, 9, 202, 1) 100%
+  );
+  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  position: absolute;
+  z-index: -1;
+  bottom: 1px;
+  left: 200px;
+}
+.ellipse-5,
+.ellipse-5 * {
+  box-sizing: border-box;
+}
+.ellipse-5 {
+  background: radial-gradient(
+    closest-side,
+    rgba(114, 4, 123, 1) 0%,
+    rgba(103, 9, 223, 1) 100%
+  );
+  border-radius: 50%;
+  width:100px;
+  height: 100px;
+  position: absolute;
+  z-index: -1;
+  bottom: 1px;
+  right: 1px;
+}
+
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Company Dashboard -->
+    <div class="flex flex-col md:flex-row h-screen">
+      <!-- Sidebar -->
+      <div
+        id="sidebar"
+        class="fixed top-0 bottom-0 left-0 w-72 overflow-y-auto z-10 px-8 py-4 text-white"
+      >
+        <button
+          id="closeSidebarBtn"
+          class="absolute top-2 right-2 text-white focus:outline-none md:hidden"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+            class="w-10 h-10"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M6.293 6.293a1 1 0 011.414 0L10 8.586l2.293-2.293a1 1 0 111.414 1.414L11.414 10l2.293 2.293a1 1 0 01-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 01-1.414-1.414L8.586 10 6.293 7.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+        <div class="flex items-center  justify-items-start  gap-2 mb-4">
+            <h1 class="text-3xl font-semibold ">Hello</h1>
+            <h1 class="text-2xl font-semibold">👻</h1>
+          <h1 class="text-3xl font-bold">{{ employee.user.username }}</h1>
+        </div>
+        <ul>
+            <li class="mb-4 menu-item p-3 rounded-lg hover:bg-gray-800">
+              <a href="{% url 'Employee_view' %}" class="block flex items-center">
+                  <i class="ri-user-line  mr-2  ri-xl"></i>
+                Profile
+              </a>
+            </li>
+            <li class="mb-4 menu-item p-3 rounded-lg hover:bg-gray-800">
+              <a
+                href="{% url 'leave_management' %}"
+                class="block flex items-center"
+              >
+              <i class="ri-walk-line mr-2  ri-xl"></i>
+                Leave Management
+              </a>
+            </li>
+            <li class="mb-4 menu-item p-3 rounded-lg hover:bg-gray-800 bg-gray-800 active">
+              <a
+                href="{% url 'employee_attendance_report' %}"
+                class="block flex items-center"
+              >
+              <i class="ri-profile-line mr-2  ri-xl"></i>
+                Attendance Report
+              </a>
+            </li>
+           
+          </ul>
+        <div class="absolute bottom-8 left-8">
+          <a href="{% url 'user_logout' %}" class="flex items-center mb-4 menu-item p-3 px-12 rounded-lg hover:bg-gray-800 table-header text-white">
+            <i class="ri-expand-left-line ri-xl mr-2"></i>
+            Logout
+          </a>
+        </div>
+        
+        
+      </div>
+      <!-- Main Content -->
+      <div class="ellipse-1"></div>
+      <div class="ellipse-2"></div>
+      <div class="ellipse-5"></div>
+      <div class="md:ml-72 overflow-y-auto flex-1 p-8 lg:p-20 glass">
+        <!-- Employee Details -->
+        <div class="mb-8">
+          <h2 class="text-2xl font-semibold mb-4">Employee Details for 🗓️ {{selected_month}} - {{selected_year}}</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="employee-card p-6 rounded-lg">
+              <h2 class="text-xl font-semibold mb-2">Present</h2>
+              <p class="text-4xl font-bold">{{present_days}}</p>
+            </div>
+            <div class="employee-card p-6 rounded-lg">
+              <h2 class="text-xl font-semibold mb-2">Leave Total</h2>
+              <p class="text-4xl font-bold">{{total_leave_days}}</p>
+            </div>
+            <div class="employee-card p-6 rounded-lg">
+              <h2 class="text-xl font-semibold mb-2">Absent Days</h2>
+              <p class="text-4xl font-bold">{{absent_days}}</p>
+            </div>
+          </div>
+        </div>
+        <!-- Employee Table -->
+        <div>
+         
+          <h2 class="text-2xl font-semibold mb-4">Employee attendance statments</h2>
+          
+          <form method="GET">
+            <label for="selected_date">Select Month and Year: </label>
+            <input type="month" class="table-header rounded-lg" name="selected_date" id="selected_date" value="{{ selected_year }}-{{ selected_month | stringformat:'02d' }}">
+            <button type="submit" class="hover:bg-gray-800 rounded-lg">Search</button>
+           
+              <a href="{% url 'download_attendance_report' selected_year selected_month %}" class="rounded-lg table-header ml-52 hover:bg-gray-800 text-white py-2 px-4 ">Download Report</a>
+             
+        </form>
+   
+      
+        <div class="overflow-x-auto-cols-auto">
+          <br>
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr class="table-header">
+                        <th class="px-6 py-3 text-left text-xs leading-4 font-medium uppercase tracking-wider">ID</th>
+                        <th class="px-6 py-3 text-left text-xs leading-4 font-medium uppercase tracking-wider">Employee Name</th>
+                        <th class="px-6 py-3 text-left text-xs leading-4 font-medium uppercase tracking-wider">Designation</th>
+                        <th class="px-6 py-3 text-left text-xs leading-4 font-medium uppercase tracking-wider">Contact No.</th>
+                        <th class="px-6 py-3 text-left text-xs leading-4 font-medium uppercase tracking-wider">Gender</th>
+                        <th class="px-6 py-3 text-left text-xs leading-4 font-medium uppercase tracking-wider">Check In Time</th>
+                        <th class="px-6 py-3 text-left text-xs leading-4 font-medium uppercase tracking-wider">Check Out Time</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700">
+                    {% for employees in present_days_employee %}
+                    <tr class="table-row">
+                        <td class="px-6 py-4 whitespace-no-wrap">{{ employees.id }}</td>
+                        <td class="px-6 py-4 whitespace-no-wrap">{{ employees.employee.user.first_name }} {{ attendance_record.employee.user.last_name }}</td>
+                        <td class="px-6 py-4 whitespace-no-wrap">{{ employees.employee.position }}</td>
+                        <td class="px-6 py-4 whitespace-no-wrap">{{ employees.employee.contact_number }}</td>
+                        <td class="px-6 py-4 whitespace-no-wrap">{{ employees.employee.gender }}</td>
+                        <td class="px-6 py-4 whitespace-no-wrap">{{ employees.check_in_time }}</td>
+                        <td class="px-6 py-4 whitespace-no-wrap">{{ employees.check_out_time }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        </div>
+      </div>
+      <!-- Fullscreen Button -->
+      <button id="fullscreenBtn" onclick="toggleFullScreen()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="feather feather-maximize"
+        >
+          <path d="M3 3h18v18H3V3z" />
+        </svg>
+      </button>
+    </div>
+    <script>
+      // JavaScript to handle sidebar toggle
+      const menuBtn = document.getElementById("menuBtn");
+      const sidebar = document.getElementById("sidebar");
+      const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+
+      menuBtn.addEventListener("click", () => {
+        sidebar.classList.toggle("-translate-x-full");
+      });
+
+      closeSidebarBtn.addEventListener("click", () => {
+        sidebar.classList.add("-translate-x-full");
+      });
+
+      // JavaScript to handle fullscreen toggle
+      function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().then(() => {
+            sidebar.classList.add("-translate-x-full");
+          });
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().then(() => {
+              sidebar.classList.remove("-translate-x-full");
+            });
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Stream and Capture</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Gradient Background */
+        body {
+            background: linear-gradient(to right, #102c57, #102c57, #102c57);
+            color: #fefaf6;
+            display: flex;
+            flex-direction: column;
+            align-items: left;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .message-container {
+            display:flex;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .camera-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body class="bg-cover bg-center min-h-screen flex flex-row" style="background: linear-gradient(to right, #102c57, #102c57, #102c57);">
+    
+    <div class="message-container">
+        {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+            <p class="{% if message.tags == 'success' %}text-green-500{% elif message.tags == 'error' %}text-red-500{% elif message.tags == 'warning' %}text-yellow-500{% elif message.tags == 'info' %}text-blue-500{% endif %} text-center fade-away">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="camera-container">
+            <div class="flex justify-center mt-4" id="faceNameSection" style="display: ">
+                <p class="text-white text-lg" id="faceName">{{attendance.employee.user.username}}</p>
+            </div>
+            <div class="container mx-auto py-8 max-w-lg">
+                <div class="flex justify-center">
+                    <video id="videoElement" autoplay class="w-full max-w-md"></video>
+                    <img id="capturedImage" src="" alt="Captured Image" style="display: none;">
+                </div>
+    
+                <form id="imageForm" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" id="imageData" name="image_data">
+                    <input type="hidden" name="latitude" id="latitude">
+                    <input type="hidden" name="longitude" id="longitude">
+                </form>
+                <div class="flex flex-col md:flex-row justify-center mt-4 space-x-4 space-y-4">
+                    <button type="submit" id="captureButton" class="hover:bg-gray-800 text-white font-bold py-3 px-6 rounded-lg">
+                        📸 Capture Photo
+                    </button>
+                    <button id="recaptureButton" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg" style="display: none;">
+                        Retake Photo
+                    </button>
+                    <button id="submitDataButton" class="hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg" style="display: none;">
+                        Submit Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    const video = document.getElementById("videoElement");
+    const captureButton = document.getElementById("captureButton");
+    const recaptureButton = document.getElementById("recaptureButton");
+    const submitDataButton = document.getElementById("submitDataButton");
+    const capturedImage = document.getElementById("capturedImage");
+
+    // Function to get camera stream
+    async function getCameraStream() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+        } catch (err) {
+            console.error("Error accessing webcam:", err);
+        }
+    }
+
+    // Fetch and send location data
+    navigator.geolocation.getCurrentPosition(position => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        
+        // Append latitude and longitude to the form data
+        document.getElementById("latitude").value = latitude;
+        document.getElementById("longitude").value = longitude;
+
+    }, error => {
+        console.error("Error fetching location:", error);
+    });
+
+    // Call the function to get camera stream when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        getCameraStream();
+    });
+
+    // Capture button click event
+    captureButton.addEventListener("click", () => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Show captured image in place of the video element
+        capturedImage.src = canvas.toDataURL("image/jpeg");
+        capturedImage.style.display = "block";
+
+        // Set the captured image data in the hidden input field
+        document.getElementById("imageData").value = canvas.toDataURL("image/jpeg");
+
+        // Toggle button visibility
+        video.style.display = "none";
+        captureButton.style.display = "none";
+        recaptureButton.style.display = "inline-block";
+        submitDataButton.style.display = "inline-block";
+        document.getElementById("imageForm").submit();
+    });
+
+    // Recapture button click event
+    recaptureButton.addEventListener("click", () => {
+        // Hide the captured image
+        capturedImage.style.display = "none";
+
+        // Show the video element
+        video.style.display = "block";
+
+        // Toggle button visibility
+        captureButton.style.display = "inline-block";
+        recaptureButton.style.display = "none";
+        submitDataButton.style.display = "none";
+        
+        // Hide face name section
+        document.getElementById("faceNameSection").style.display = "none";
+    });
+
+    // Submit data button click event
+    submitDataButton.addEventListener("click", () => {
+        // Submit the form
+        
+    });
+</script>
+</body>
+</html>
