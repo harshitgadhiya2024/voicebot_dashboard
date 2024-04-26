@@ -245,6 +245,18 @@
                             <div class="card-header">
                                 <h4 class="card-title">Compaign Details</h4>
                             </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="col-md-auto" id="remove_tag" style="margin: 10px">
+                                        {% with messages = get_flashed_messages(with_categories=true)
+                                        %} {% if messages %} {% for category, message in messages %}
+                                        <div class="alert alert-{{category}} alert-dismissable" role="alert" id="inside_alert">
+                                            {{message}}
+                                        </div>
+                                        {% endfor %} {% endif %} {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
                             <div class="card-body">
                                 <div class="table-responsive">
                                     <table class="table table-responsive-md">

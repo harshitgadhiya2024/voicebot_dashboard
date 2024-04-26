@@ -700,9 +700,6 @@ def voice_callback():
         extention = request.args.get("extention")
         number = request.args.get("number")
         app.logger.debug(f"data for calling: number_id:{number_id}, campaign_id: {campaign_id}, answer: {answer_time}, status: {status}, extension: {extention}, number: {number}")
-        app.logger.debug(f"requestt data for text: {request.text}")
-        app.logger.debug(f"requestt data for form: {request.form}")
-        app.logger.debug(f"requestt data for data: {request.data}")
         
 
     except Exception as e:

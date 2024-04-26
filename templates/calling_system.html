@@ -185,6 +185,18 @@
 							<div class="card-header border-0 pb-0">
 								<h5 class="card-title">Calling System</h5>
 							</div>
+							<div class="row">
+								<div class="col-sm-12">
+									<div class="col-md-auto" id="remove_tag" style="margin: 10px">
+										{% with messages = get_flashed_messages(with_categories=true)
+										%} {% if messages %} {% for category, message in messages %}
+										<div class="alert alert-{{category}} alert-dismissable" role="alert" id="inside_alert">
+											{{message}}
+										</div>
+										{% endfor %} {% endif %} {% endwith %}
+									</div>
+								</div>
+							</div>
 							<div class="card-body">
 								<form method="POST" action="/bulk_calling" enctype="multipart/form-data">
 									<div class="mb-4">
