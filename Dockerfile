@@ -11,7 +11,7 @@ COPY . /app
 
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-EXPOSE 80
+EXPOSE 2424
 
 ENV NAME World
 

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<!--Title-->
+	<title>Dailogwave - Dashboard</title>
+
+	<!-- Meta -->
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="author" content="DexignZone">
+	<meta name="robots" content="index, follow">
+
+	<meta name="keywords"
+		content="Mophy, Payment Admin Dashboard, Bootstrap Template, FrontEnd, Web Application, Payment Management, Responsive Design, User Experience, Customizable, Modern UI, Dashboard Template, Admin Panel, Bootstrap 4, HTML5, CSS3, JavaScript, Finance, Payment Gateway, Admin Template, UI Kit, SASS, SCSS, CRM, Analytics, Responsive Dashboard, responsive admin dashboard, sales dashboard, ui kit, web app, Admin Dashboard, Template, Admin, CMS pages, Authentication, FrontEnd Integration, Web Application UI, Bootstrap Framework, User Interface Kit, Financial Dashboard, SASS Integration, Customizable Template, Payment Gateway, HTML5/CSS3, CRM Dashboard, Analytics Dashboard, Admin Dashboard UI, Mobile-Friendly Design, UI Components, Dashboard Widgets, Dashboard Framework, Data Visualization, User Experience (UX), Dashboard Widgets, Real-time Analytics, Cross-Browser Compatibility, Interactive Charts, Payment Processing, Performance Optimization, Multi-Purpose Template, Efficient Admin Tools, Task Management, Modern Web Technologies, Payment Tracking, Responsive Tables, Dashboard Widgets, Invoice Management, Access Control, Modular Design, Payment History, Trend Analysis, User-Friendly Interface">
+
+	<meta name="description"
+		content="Explore the power of Mophy – a sleek and feature-rich Payment Admin Dashboard Bootstrap Template with a seamlessly integrated FrontEnd. Effortlessly manage your payment processes and elevate user experiences with this modern, responsive, and customizable solution. Unlock a world of possibilities in payment administration and frontend design with Mophy – your key to streamlined and visually stunning web applications.">
+
+	<meta property="og:title" content="Mophy - Payment Admin Dashboard Bootstrap Template + FrontEnd | DexignZone">
+	<meta property="og:description"
+		content="Explore the power of Mophy – a sleek and feature-rich Payment Admin Dashboard Bootstrap Template with a seamlessly integrated FrontEnd. Effortlessly manage your payment processes and elevate user experiences with this modern, responsive, and customizable solution. Unlock a world of possibilities in payment administration and frontend design with Mophy – your key to streamlined and visually stunning web applications.">
+	<meta property="og:image" content="social-image.png">
+
+	<meta name="format-detection" content="telephone=no">
+
+	<meta name="twitter:title" content="Mophy - Payment Admin Dashboard Bootstrap Template + FrontEnd | DexignZone">
+	<meta name="twitter:description"
+		content="Explore the power of Mophy – a sleek and feature-rich Payment Admin Dashboard Bootstrap Template with a seamlessly integrated FrontEnd. Effortlessly manage your payment processes and elevate user experiences with this modern, responsive, and customizable solution. Unlock a world of possibilities in payment administration and frontend design with Mophy – your key to streamlined and visually stunning web applications.">
+	<meta name="twitter:image" content="social-image.png">
+	<meta name="twitter:card" content="summary_large_image">
+
+	<!-- MOBILE SPECIFIC -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- Favicon icon -->
+	<link rel="icon" type="image/png" sizes="16x16" href="static/assets/images/favicon.png">
+
+
+	<link href="static/assets/vendor/jqvmap/css/jqvmap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="static/assets/vendor/chartist/css/chartist.min.css">
+	<!-- Vectormap -->
+	<link href="static/assets/vendor/jqvmap/css/jqvmap.min.css" rel="stylesheet">
+	<link href="static/assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet">
+	<link href="static/assets/vendor/owl-carousel/owl.carousel.css" rel="stylesheet">
+	<link class="main-css" href="static/assets/css/style.css" rel="stylesheet">
+
+
+</head>
+
+<body>
+
+	<!--*******************
+        Preloader start
+    ********************-->
+	<div id="preloader">
+		<div class="sk-three-bounce">
+			<div class="sk-child sk-bounce1"></div>
+			<div class="sk-child sk-bounce2"></div>
+			<div class="sk-child sk-bounce3"></div>
+		</div>
+	</div>
+	<!--*******************
+        Preloader end
+    ********************-->
+
+	<!--**********************************
+        Main wrapper start
+    ***********************************-->
+	<div id="main-wrapper">
+
+		<!--**********************************
+            Nav header start
+        ***********************************-->
+		<div class="nav-header">
+			<a href="/dashboard" class="brand-logo" style="padding: 50px 20px;">
+				<img class="new" style="height: 200px; margin-top: 30px;" src="static/logo_white.png" alt="">
+			</a>
+
+			<div class="nav-control">
+				<div class="hamburger">
+					<span class="line"></span><span class="line"></span><span class="line"></span>
+				</div>
+			</div>
+		</div>
+		<!--**********************************
+            Nav header end
+        ***********************************-->
+
+
+		<!--**********************************
+            Header start
+        ***********************************-->
+		<div class="header">
+			<div class="header-content">
+				<nav class="navbar navbar-expand">
+					<div class="collapse navbar-collapse justify-content-between">
+						<div class="header-left">
+
+						</div>
+						<ul class="navbar-nav header-right">
+							<li class="nav-item dropdown notification_dropdown">
+								<a class="nav-link bell dz-theme-mode" href="javascript:void(0);">
+									<i id="icon-light" class="fas fa-sun"></i>
+									<i id="icon-dark" class="fas fa-moon"></i>
+
+								</a>
+							</li>
+							<li class="nav-item dropdown header-profile">
+								<a class="nav-link" href="javascript:void(0)" role="button" data-bs-toggle="dropdown">
+									<div class="header-info">
+										<span class="text-black">Hello, <strong>{{username}}</strong></span>
+										<p class="fs-12 mb-0">User</p>
+									</div>
+									{% if company_logo %}
+									<img src="{{company_logo}}" width="20" alt="">
+									{% else %}
+									<p style="padding: 10px 20px; background-color: #2BC155; border-radius: 50%; margin: 10px 0px; color: #fff; font-weight: 600; ">{{username[0].title()}}</p>
+									{% endif %}
+								</a>
+								<div class="dropdown-menu dropdown-menu-end">
+									<a href="/logout" class="dropdown-item ai-icon">
+										<svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" class="text-danger"
+											width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+											stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+											<polyline points="16 17 21 12 16 7"></polyline>
+											<line x1="21" y1="12" x2="9" y2="12"></line>
+										</svg>
+										<span class="ms-2">Logout </span>
+									</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+			</div>
+		</div>
+		<!--**********************************
+            Header end ti-comment-alt
+        ***********************************-->
+
+		<!--**********************************
+            Sidebar start
+        ***********************************-->
+		<div class="deznav">
+			<div class="deznav-scroll">
+				<ul class="metismenu" id="menu">
+					<li><a class="ai-icon" href="/dashboard">
+							<i class="flaticon-381-networking" style="background-color: #1EAAE7; color: #fff;"></i>
+							<span class="nav-text" style="color: #1EAAE7;">Dashboard</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/campaign_details">
+							<i class="fas fa-tasks"></i>
+							<span class="nav-text">Campaign Details</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/bulk_calling">
+							<i class="fas fa-phone"></i>
+							<span class="nav-text">Bulk Auto Call</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/upload_audio">
+							<i class="fas fa-file-audio"></i>
+							<span class="nav-text">Upload Audio</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
+		<!--**********************************
+            Sidebar end
+        ***********************************-->
+
+		<!--**********************************
+            Content body start
+        ***********************************-->
+		<div class="content-body default-height">
+			<!-- row -->
+			<div class="container-fluid">
+				<div class="form-head mb-4">
+					<h2 class="text-black font-w600 mb-0">Dashboard</h2>
+					{% if phonenumber %}
+					<p class="btn btn-primary">{{phonenumber}}</p>
+					{% else %}
+					<p class="btn btn-primary">Get Phone Number</p>
+					{% endif %}
+				</div>
+				<div class="row">
+					<div class="col-sm-12">
+						<div class="col-md-auto" id="remove_tag" style="margin: 10px">
+							{% with messages = get_flashed_messages(with_categories=true)
+							%} {% if messages %} {% for category, message in messages %}
+							<div class="alert alert-{{category}} alert-dismissable" role="alert" id="inside_alert">
+								{{message}}
+							</div>
+							{% endfor %} {% endif %} {% endwith %}
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xl-12">
+						<div class="row">
+							<div class="col-xl-12">
+								<div class="card">
+									<div class="card-body">
+										<div class="row align-items-center">
+											<div class="col-xl-7  col-xxl-12 col-md-7">
+												<div class="row g-3">
+													<div class="col-sm-4">
+														<div class="bg-primary rounded text-center p-3">
+															<div
+																class="d-inline-block position-relative donut-chart-sale mb-3">
+																	<span class="fs-24 text-white font-w600">{{campaigns}}</span>
+															</div>
+															<span class="fs-14 text-white d-block">Total Campaigns</span>
+														</div>
+													</div>
+													<div class="col-sm-4">
+														<div class="bg-success rounded text-center p-3">
+															<div
+																class="d-inline-block position-relative donut-chart-sale mb-3">
+																<span class="fs-24 text-white font-w600">{{calls}}</span>
+															</div>
+															<span class="fs-14 text-white d-block">Total Calls</span>
+														</div>
+													</div>
+													<div class="col-sm-4">
+														<div class="bg-danger rounded text-center p-3">
+															<div
+																class="d-inline-block position-relative donut-chart-sale mb-3">
+																<span class="fs-24 text-white font-w600">{{points}}</span>
+															</div>
+															<span class="fs-14 text-white d-block">Remaining Token</span>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--**********************************
+            Content body end
+        ***********************************-->
+		<!--**********************************
+           Support ticket button start
+        ***********************************-->
+
+		<!--**********************************
+           Support ticket button end
+        ***********************************-->
+
+
+	</div>
+	<!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+	<!--**********************************
+        Scripts
+    ***********************************-->
+	<!-- Required vendors -->
+	<script src="static/assets/vendor/global/global.min.js"></script>
+	<script src="static/assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+	<script src="static/assets/vendor/chart-js/chart.bundle.min.js"></script>
+	<script src="static/assets/vendor/owl-carousel/owl.carousel.js"></script>
+
+	<!-- Chart piety plugin files -->
+	<script src="static/assets/vendor/peity/jquery.peity.min.js"></script>
+
+	<!-- Apex Chart -->
+	<script src="static/assets/vendor/apexchart/apexchart.js"></script>
+
+	<!-- Dashboard 1 -->
+	<script src="static/assets/js/dashboard/dashboard-1.js"></script>
+
+	<script src="static/assets/js/custom.min.js"></script>
+	<script src="static/assets/js/demo.js"></script>
+
+	<script>
+		function carouselReview() {
+			/*  testimonial one function by = owl.carousel.js */
+			/*  testimonial one function by = owl.carousel.js */
+			jQuery('.testimonial-one').owlCarousel({
+				loop: true,
+				margin: 10,
+				autoplay: true,
+				nav: false,
+				center: true,
+				rtl: true,
+				dots: false,
+				navText: ['<i class="fas fa-caret-left"></i>', '<i class="fas fa-caret-right"></i>'],
+				responsive: {
+					0: {
+						items: 2
+					},
+					400: {
+						items: 3
+					},
+					700: {
+						items: 5
+					},
+					991: {
+						items: 6
+					},
+
+					1200: {
+						items: 4
+					},
+					1600: {
+						items: 5
+					}
+				}
+			})
+		}
+
+		jQuery(window).on('load', function () {
+			setTimeout(function () {
+				carouselReview();
+
+			}, 1000);
+		});
+
+		jQuery(document).ready(function () {
+			setTimeout(function () {
+				dezSettingsOptions.version = 'light';
+				new dezSettings(dezSettingsOptions);
+
+				setCookie('version', 'light');
+			}, 1500)
+		});
+	</script>
+</body>
+</html>

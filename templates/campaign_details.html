@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<!-- Mirrored from mophy.dexignzone.com/xhtml/table-bootstrap-basic.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 25 Apr 2024 07:17:24 GMT -->
+
+<head>
+    <!--Title-->
+    <title>Dailogwave - Audio Upload</title>
+
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="DexignZone">
+    <meta name="robots" content="index, follow">
+
+    <meta name="keywords"
+        content="Mophy, Payment Admin Dashboard, Bootstrap Template, FrontEnd, Web Application, Payment Management, Responsive Design, User Experience, Customizable, Modern UI, Dashboard Template, Admin Panel, Bootstrap 4, HTML5, CSS3, JavaScript, Finance, Payment Gateway, Admin Template, UI Kit, SASS, SCSS, CRM, Analytics, Responsive Dashboard, responsive admin dashboard, sales dashboard, ui kit, web app, Admin Dashboard, Template, Admin, CMS pages, Authentication, FrontEnd Integration, Web Application UI, Bootstrap Framework, User Interface Kit, Financial Dashboard, SASS Integration, Customizable Template, Payment Gateway, HTML5/CSS3, CRM Dashboard, Analytics Dashboard, Admin Dashboard UI, Mobile-Friendly Design, UI Components, Dashboard Widgets, Dashboard Framework, Data Visualization, User Experience (UX), Dashboard Widgets, Real-time Analytics, Cross-Browser Compatibility, Interactive Charts, Payment Processing, Performance Optimization, Multi-Purpose Template, Efficient Admin Tools, Task Management, Modern Web Technologies, Payment Tracking, Responsive Tables, Dashboard Widgets, Invoice Management, Access Control, Modular Design, Payment History, Trend Analysis, User-Friendly Interface">
+
+    <meta name="description"
+        content="Explore the power of Mophy – a sleek and feature-rich Payment Admin Dashboard Bootstrap Template with a seamlessly integrated FrontEnd. Effortlessly manage your payment processes and elevate user experiences with this modern, responsive, and customizable solution. Unlock a world of possibilities in payment administration and frontend design with Mophy – your key to streamlined and visually stunning web applications.">
+
+    <meta property="og:title" content="Mophy - Payment Admin Dashboard Bootstrap Template + FrontEnd | DexignZone">
+    <meta property="og:description"
+        content="Explore the power of Mophy – a sleek and feature-rich Payment Admin Dashboard Bootstrap Template with a seamlessly integrated FrontEnd. Effortlessly manage your payment processes and elevate user experiences with this modern, responsive, and customizable solution. Unlock a world of possibilities in payment administration and frontend design with Mophy – your key to streamlined and visually stunning web applications.">
+    <meta property="og:image" content="social-image.png">
+
+    <meta name="format-detection" content="telephone=no">
+
+    <meta name="twitter:title" content="Mophy - Payment Admin Dashboard Bootstrap Template + FrontEnd | DexignZone">
+    <meta name="twitter:description"
+        content="Explore the power of Mophy – a sleek and feature-rich Payment Admin Dashboard Bootstrap Template with a seamlessly integrated FrontEnd. Effortlessly manage your payment processes and elevate user experiences with this modern, responsive, and customizable solution. Unlock a world of possibilities in payment administration and frontend design with Mophy – your key to streamlined and visually stunning web applications.">
+    <meta name="twitter:image" content="social-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- MOBILE SPECIFIC -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="static/assets/images/favicon.png">
+    <!-- Custom Stylesheet -->
+    <link href="static/assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet">
+    <link class="main-css" href="static/assets/css/style.css" rel="stylesheet">
+    <style>
+        .overlaydata {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Styles for the popup */
+        .popupdata {
+            background-color: #fff;
+            /* padding: 20px; */
+            display: flex;
+            min-height: 220px;
+            box-sizing: border-box;
+            width: 450px;
+            flex-direction: column;
+            align-items: right;
+            gap: 1rem;
+            border-radius: 20px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+            font-size: 18px;
+        }
+
+        .overlaytype {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Styles for the popup */
+        .popuptype {
+            background-color: #fff;
+            /* padding: 20px; */
+            display: flex;
+            min-height: 260px;
+            box-sizing: border-box;
+            width: 450px;
+            flex-direction: column;
+            align-items: right;
+            gap: 1rem;
+            border-radius: 20px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+            font-size: 18px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!--*******************
+        Preloader start
+    ********************-->
+    <div id="preloader">
+        <div class="sk-three-bounce">
+            <div class="sk-child sk-bounce1"></div>
+            <div class="sk-child sk-bounce2"></div>
+            <div class="sk-child sk-bounce3"></div>
+        </div>
+    </div>
+    <!--*******************
+        Preloader end
+    ********************-->
+
+
+    <!--**********************************
+        Main wrapper start
+    ***********************************-->
+    <div id="main-wrapper">
+
+        <!--**********************************
+            Nav header start
+        ***********************************-->
+        <div class="nav-header">
+			<a href="/dashboard" class="brand-logo" style="padding: 50px 20px;">
+				<img class="new" style="height: 200px; margin-top: 30px;" src="static/logo_white.png" alt="">
+			</a>
+
+			<div class="nav-control">
+				<div class="hamburger">
+					<span class="line"></span><span class="line"></span><span class="line"></span>
+				</div>
+			</div>
+		</div>
+        <!--**********************************
+            Nav header end
+        ***********************************-->
+
+        <!--**********************************
+            Header start
+        ***********************************-->
+        <div class="header">
+            <div class="header-content">
+                <nav class="navbar navbar-expand">
+                    <div class="collapse navbar-collapse justify-content-between">
+                        <div class="header-left">
+
+                        </div>
+                        <ul class="navbar-nav header-right">
+                            <li class="nav-item dropdown notification_dropdown">
+                                <a class="nav-link bell dz-theme-mode" href="javascript:void(0);">
+                                    <i id="icon-light" class="fas fa-sun"></i>
+                                    <i id="icon-dark" class="fas fa-moon"></i>
+
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown header-profile">
+                                <a class="nav-link" href="javascript:void(0)" role="button" data-bs-toggle="dropdown">
+                                    <div class="header-info">
+                                        <span class="text-black">Hello, <strong>{{username}}</strong></span>
+                                        <p class="fs-12 mb-0">User</p>
+                                    </div>
+                                    {% if company_logo %}
+                                    <img src="{{company_logo}}" width="20" alt="">
+                                    {% else %}
+                                    <p
+                                        style="padding: 10px 20px; background-color: #2BC155; border-radius: 50%; margin: 10px 0px; color: #fff; font-weight: 600; ">
+                                        {{username[0].title()}}</p>
+                                    {% endif %}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a href="/logout" class="dropdown-item ai-icon">
+                                        <svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" class="text-danger"
+                                            width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                            <polyline points="16 17 21 12 16 7"></polyline>
+                                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                                        </svg>
+                                        <span class="ms-2">Logout </span>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!--**********************************
+            Header end ti-comment-alt
+        ***********************************-->
+
+        <!--**********************************
+            Sidebar start
+        ***********************************-->
+        <div class="deznav">
+            <div class="deznav-scroll">
+                <ul class="metismenu" id="menu">
+                    <li><a class="ai-icon" href="/dashboard">
+                            <i class="flaticon-381-networking"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li><a class="ai-icon" href="/campaign_details">
+                            <i class="fas fa-tasks" style="background-color: #1EAAE7; color: #fff;"></i>
+                            <span class="nav-text" style="color: #1EAAE7;">Campaign Details</span>
+                        </a>
+                    </li>
+                    <li><a class="ai-icon" href="/bulk_calling">
+                            <i class="fas fa-phone"></i>
+                            <span class="nav-text">Bulk Auto Call</span>
+                        </a>
+                    </li>
+                    <li><a class="ai-icon" href="/upload_audio">
+                            <i class="fas fa-file-audio"></i>
+                            <span class="nav-text">Upload Audio</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!--**********************************
+            Sidebar end
+        ***********************************-->
+
+        <!--**********************************
+            Content body start
+        ***********************************-->
+        <div class="content-body default-height">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4 class="card-title">Compaign Details</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-responsive-md">
+                                        <thead>
+                                            <tr>
+                                                <th>Compaign Name</th>
+                                                <th>Answered</th>
+                                                <th>Not Answered</th>
+                                                <th>Total Calls</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--**********************************
+            Content body end
+        ***********************************-->
+
+        <!--**********************************
+           Support ticket button start
+        ***********************************-->
+
+        <!--**********************************
+           Support ticket button end
+        ***********************************-->
+
+
+    </div>
+    <div class="overlaydata" id="overlaydata">
+        <div class="popupdata">
+            <h3 style="padding: 20px 0px 0px 20px; color: #000;">Upload Audio</h3>
+            <hr style="margin: 0;">
+            <form method="POST" enctype="multipart/form-data" action="/upload_audio_file">
+                <div class="form-group">
+                    <center><input type="file" style="width: 70%; font-size: 18px;" name="fileupload" id="fileInput"
+                            multiple class="form-control" required accept=".wav" /></center>
+                </div>
+                <hr style="margin-top: 20px; margin-bottom: 20px;">
+
+                <div class="newbutton" style="padding: 0px 20px; text-align: right;">
+                    <a type="button" class="btn btn-dark border-0" onclick="closePopupdata()">
+                        Close
+                    </a>
+                    <button type="submit" class="btn btn-primary" id="deletedatamain">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="overlaytype" id="overlaytype">
+        <div class="popuptype">
+            <h3 style="padding: 20px 0px 0px 10px; color: #000;">Record Audio</h3>
+            <hr style="margin: 0;">
+            <center><button id="startRecording" class="btn btn-primary">Start Recording</button>
+                <button id="stopRecording" class="btn btn-danger">Stop Recording</button>
+                <audio id="recordedAudio" style="width: 80%; margin-top: 10px;" controls></audio>
+            </center>
+            <hr style="padding: 0; margin: 0;">
+            <div class="newbutton" style="padding: 0px 20px; margin-bottom: 15px; text-align: right;">
+                <button type="button" class="btn btn-dark" onclick="closePopuptype()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+    <script src="static/assets/vendor/global/global.min.js"></script>
+    <script src="static/assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+    <script src="static/assets/js/custom.min.js"></script>
+    <script src="static/assets/js/demo.js"></script>
+    <!-- <script src="static/assets/js/styleSwitcher.js"></script> -->
+    <script>
+        function openPopupdata() {
+            document.getElementById("overlaydata").style.display = "flex";
+        }
+        function closePopupdata() {
+            document.getElementById("overlaydata").style.display = "none";
+        }
+        function openPopuptype() {
+            document.getElementById("overlaytype").style.display = "flex";
+        }
+        function closePopuptype() {
+            document.getElementById("overlaytype").style.display = "none";
+        }
+    </script>
+    <script>
+        let recorder;
+        let recordedChunks = [];
+
+        const startRecording = () => {
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    recorder = new MediaRecorder(stream);
+                    recorder.ondataavailable = (e) => {
+                        recordedChunks.push(e.data);
+                    };
+                    recorder.onstop = () => {
+                        const audioBlob = new Blob(recordedChunks, { type: 'audio/wav' });
+                        const formData = new FormData();
+                        formData.append('audio', audioBlob);
+                        const audioUrl = URL.createObjectURL(audioBlob);
+
+                        // Set the src attribute of the audio element
+                        document.getElementById('recordedAudio').src = audioUrl;
+
+                        fetch('/save_audio', {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => {
+                                if (response.ok) {
+                                    document.getElementById("overlaytype").style.display = "none";
+                                    window.location.reload()
+                                } else {
+                                    console.error('Failed to save audio.');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error saving audio:', error);
+                            });
+                    };
+                    recorder.start();
+                })
+                .catch(err => console.error('Error recording audio: ', err));
+        };
+
+        const stopRecording = () => {
+            recorder.stop();
+            document.getElementById("overlaytype").style.display = "none";
+            window.location.reload()
+        };
+
+        document.getElementById('startRecording').addEventListener('click', startRecording);
+        document.getElementById('stopRecording').addEventListener('click', stopRecording);
+    </script>
+</body>
+
+<!-- Mirrored from mophy.dexignzone.com/xhtml/table-bootstrap-basic.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 25 Apr 2024 07:17:24 GMT -->
+
+</html>

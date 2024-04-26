@@ -10,7 +10,7 @@ from functools import wraps
 from PIL import Image
 import jwt
 from flask import (flash, Flask, redirect, render_template, request,
-                   session, url_for, send_file, jsonify)
+                   session, url_for, send_file, jsonify, send_from_directory)
 from flask_cors import CORS
 from flask_mail import Mail
 from string import ascii_uppercase
@@ -22,6 +22,7 @@ from operations.common_func import (password_validation, validate_phone_number, 
 from operations.mongo_connection import (mongo_connect, data_added, find_all_data, find_spec_data, update_mongo_data)
 import json, requests
 import pandas as pd
+import audioread
 
 secreat_id = uuid.uuid4().hex
 
@@ -40,6 +41,8 @@ app.config['MAIL_USERNAME'] = constant_data["mail_configuration"].get("server_us
 app.config['MAIL_PASSWORD'] = constant_data["mail_configuration"].get("server_password")
 app.config['MAIL_USE_SSL'] = True
 app.config["userbase_recording"] = {}
+app.config['voice_folder'] = "static/uploaded_audio/"
+app.config["voice_details"] = {}
 
 # handling our application secure type like http or https
 secure_type = constant_data["secure_type"]
@@ -48,7 +51,7 @@ secure_type = constant_data["secure_type"]
 mail = Mail(app)
 
 # logger & MongoDB connection
-# logger_con(app=app)
+logger_con(app=app)
 client = mongo_connect(app=app)
 db = client["voicebot"]
 
@@ -66,7 +69,7 @@ def allowed_photos(filename):
 
 def calling_happens(voice_file_id, numbers, max_retry, campaign_name,retry_wait_time):
     try:
-        print("coming to call api")
+        app.logger.debug("coming to call api")
         url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}"
 
         payload = json.dumps({})
@@ -77,10 +80,40 @@ def calling_happens(voice_file_id, numbers, max_retry, campaign_name,retry_wait_
 
         response = requests.request("POST", url, headers=headers, data=payload)
 
-        print(response.text)
+        response_text = json.loads(response.text)
+        app.logger.debug(f"response for calling api: {response.text}")
+        flag = True
+        status = response_text.get("status")
+        if status=="failed":
+            flag=False
+        
+        return flag
 
     except Exception as e:
-        print(e)
+        app.logger.debug(f"Error in calling happens function: {e}")
+
+def get_audio_duration(file_path):
+    with audioread.audio_open(file_path) as f:
+        duration = f.duration
+    return duration
+
+def upload_api(filepath, filename, exten):
+    try:
+        url = f"https://panelv2.cloudshope.com/api/upload_voice_clip?voice_clip_path={filepath}&file_name={filename}&extension={exten}"
+
+        payload = {}
+        headers = {}
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        app.logger.debug(f"your audio upload request is: {response.text}")
+
+        return True
+        
+    except Exception as e:
+        app.logger.debug(f"Error in upload audio api: {e}")
+        return False
+
 
 def token_required(func):
     # decorator factory which invoks update_wrapper() method and passes decorated function as an argument
@@ -117,6 +150,10 @@ def generate_token(username):
 
 ############################ Login operations ##################################
 
+@app.route('/download/<filename>')
+def download_image_path(filename):
+    return send_from_directory(app.config['voice_folder'], filename, as_attachment=True)
+
 @app.route("/", methods=["GET", "POST"])
 def login():
     """
@@ -142,7 +179,7 @@ def login():
 
             if len(user_all_data) == 0 and len(user_email_data) == 0:
                 flash("Please use correct credential..", "danger")
-                return render_template("auth/login.html")
+                return render_template("login.html")
             elif len(user_all_data)>0:
                 user_all_data = user_all_data[0]
                 if check_password_hash(user_all_data["password"], password):
@@ -155,7 +192,7 @@ def login():
                     return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
                 else:
                     flash("Please use correct credential..", "danger")
-                    return render_template("auth/login.html")
+                    return render_template("login.html")
             else:
                 user_email_data = user_email_data[0]
                 if check_password_hash(user_email_data["password"], password):
@@ -168,10 +205,10 @@ def login():
                     return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
                 else:
                     flash("Please use correct credential..", "danger")
-                    return render_template("auth/login.html")
+                    return render_template("login.html")
 
         else:
-            return render_template("auth/login.html")
+            return render_template("login.html")
 
     except Exception as e:
         app.logger.debug(f"Error in login route: {e}")
@@ -331,32 +368,32 @@ def register():
             spliting_email = email.split("@")[-1]
             if "." not in spliting_email:
                 flash("Email is not valid...", "danger")
-                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                return render_template("register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
                                        email=email, password=password)
             
             all_user_data = find_all_data(app, db, "user_data")
             get_all_username = [user_data["username"] for user_data in all_user_data]
             if username in get_all_username:
                 flash("Username already exits...", "danger")
-                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                return render_template("register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
                                        email=email, password=password)
             
             all_email_data = find_all_data(app, db, "user_data")
             get_all_email = [user_data["email"] for user_data in all_email_data]
             if email in get_all_email:
                 flash("Email already exits...", "danger")
-                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                return render_template("register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
                                        email=email, password=password)
             
             if not password_validation(app=app, password=password):
                 flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
-                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                return render_template("register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
                                        email=email, password=password)
             
             get_phone_val = validate_phone_number(app=app, phone_number=phone)
             if get_phone_val == "invalid number":
                 flash("Please enter correct contact no.", "danger")
-                return render_template("auth/register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
+                return render_template("register.html", fullname=fullname, username=username, phone=phone, company_name=company_name,
                                        email=email, password=password)
             
             password = generate_password_hash(password)
@@ -384,10 +421,13 @@ def register():
             app.config["userbase_recording"][username]["last_number"] = 1
 
             data_added(app, db, "user_data", register_dict) 
+            points_mapping_dict = {"user_id": user_id, "points": 10, "campaigns": 0, "calls": 0}
+            app.config["voice_details"][user_id] = points_mapping_dict
+            data_added(app, db, "points_mapping", points_mapping_dict)
             flash("Register Successfully...", "success")  
             return redirect("/")       
         else:
-            return render_template("auth/register.html")
+            return render_template("register.html")
 
     except Exception as e:
         app.logger.debug(f"Error in register route: {e}")
@@ -398,7 +438,15 @@ def register():
 @token_required
 def dashboard():
     try:
-        return render_template("user/index.html")
+        login_dict = session.get("login_dict", {})
+        username = login_dict["username"]
+        user_id = login_dict["user_id"]
+        user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+        user_points = list(user_points)
+        points = user_points[0]["points"]
+        campaigns = user_points[0]["campaigns"]
+        calls = user_points[0]["calls"]
+        return render_template("index.html", username=username, points=points, calls=calls, campaigns=campaigns)
 
     except Exception as e:
         app.logger.debug(f"error is {e}")
@@ -419,33 +467,49 @@ def save_audio():
 
         audio_file = request.files['audio']
         userfile_name = username+str(last_number)+".wav"
-        filename = f"static/uploaded_audio/{userfile_name}"
+        filename = app.config["voice_folder"]+userfile_name
         app.config["userbase_recording"][username] = {}
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
+        download_file_path = f"http://127.0.0.1:5000/download/{userfile_name}"
 
-        register_dict = {
-            "user_id": login_dict["user_id"],
-            "audio_id": "pending",
-            "audio_file": filename,
-            "status": "pending",
-            "file_status": "active"
-        }
+        # res_upload = upload_api(download_file_path, userfile_name, "wav")
+        res_upload = True
+        if res_upload:
 
-        data_added(app, db, "audio_store", register_dict)
-        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
-        all_audio_list = []
-        for var in all_audio_data:
-            if var["file_status"] == "active":
-                del var["_id"]
-                all_audio_list.append(var)
-        
-        if len(all_audio_list)!=0:
-            data_status = "data"
+            get_duraction = get_audio_duration(filename)
+            get_duraction = int(get_duraction)
+            get_cre = int(get_duraction/28)
+            get_cre = get_cre+1
+            credits = get_cre*2
 
-        flash("Record audio uploaded successfully")
+            register_dict = {
+                "user_id": login_dict["user_id"],
+                "audio_id": "pending",
+                "audio_file": filename,
+                "duration": get_duraction,
+                "credits": credits,
+                "download_file_path": download_file_path,
+                "status": "pending",
+                "file_status": "active"
+            }
 
-        return render_template("user/audio_data.html", all_audio_list=all_audio_list,data_status=data_status)
+            data_added(app, db, "audio_store", register_dict)
+            all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+            all_audio_list = []
+            for var in all_audio_data:
+                if var["file_status"] == "active":
+                    del var["_id"]
+                    all_audio_list.append(var)
+            
+            if len(all_audio_list)!=0:
+                data_status = "data"
+
+            flash("Record audio uploaded successfully", "success")
+        else:
+            flash("Please try again...", "danger")
+
+        return render_template("audio_data.html", all_audio_list=all_audio_list,data_status=data_status,username=username)
 
     except Exception as e:
         app.logger.debug(f"error in save audio route {e}")
@@ -466,33 +530,48 @@ def upload_audio_file():
 
         audio_file = request.files['fileupload']
         userfile_name = username+str(last_number)+".wav"
-        filename = f"static/uploaded_audio/{userfile_name}"
+        filename = app.config["voice_folder"]+userfile_name
         app.config["userbase_recording"][username] = {}
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
+        download_file_path = f"http://127.0.0.1:5000/download/{userfile_name}"
 
-        register_dict = {
-            "user_id": login_dict["user_id"],
-            "audio_id": "pending",
-            "audio_file": filename,
-            "status": "pending",
-            "file_status": "active"
-        }
+        # res_upload = upload_api(download_file_path, userfile_name, "wav")
+        res_upload = True
+        if res_upload:
+            get_duraction = get_audio_duration(filename)
+            get_duraction = int(get_duraction)
+            get_cre = int(get_duraction/28)
+            get_cre = get_cre+1
+            credits = get_cre*2
+            
+            register_dict = {
+                "user_id": login_dict["user_id"],
+                "audio_id": "pending",
+                "audio_file": filename,
+                "duration": get_duraction,
+                "credits": credits,
+                "download_file_path": download_file_path,
+                "status": "pending",
+                "file_status": "active"
+            }
 
-        data_added(app, db, "audio_store", register_dict)
-        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
-        all_audio_list = []
-        for var in all_audio_data:
-            if var["file_status"] == "active":
-                del var["_id"]
-                all_audio_list.append(var)
-        
-        if len(all_audio_list)!=0:
-            data_status = "data"
+            data_added(app, db, "audio_store", register_dict)
+            all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+            all_audio_list = []
+            for var in all_audio_data:
+                if var["file_status"] == "active":
+                    del var["_id"]
+                    all_audio_list.append(var)
+            
+            if len(all_audio_list)!=0:
+                data_status = "data"
 
-        flash("Record audio uploaded successfully")
+            flash("Audio uploaded successfully", "success")
+        else:
+            flash("Please try again...", "danger")
 
-        return render_template("user/audio_data.html", all_audio_list=all_audio_list,data_status=data_status)
+        return render_template("audio_data.html", all_audio_list=all_audio_list,data_status=data_status,username=username)
 
     except Exception as e:
         app.logger.debug(f"error in save audio route {e}")
@@ -503,6 +582,7 @@ def upload_audio_file():
 def upload_audio():
     try:
         login_dict = session.get("login_dict", {})
+        username = login_dict["username"]
         all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
         all_audio_list = []
         data_status = "no_data"
@@ -514,7 +594,7 @@ def upload_audio():
         if len(all_audio_list)!=0:
             data_status = "data"
 
-        return render_template("user/audio_data.html", all_audio_list=all_audio_list, data_status=data_status)
+        return render_template("audio_data.html", all_audio_list=all_audio_list, data_status=data_status,username=username)
 
     except Exception as e:
         app.logger.debug(f"error in upload audio route {e}")
@@ -525,6 +605,8 @@ def upload_audio():
 def bulk_calling():
     try:
         login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
         all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
         all_audio_ids = []
         for var in all_audio_data:
@@ -537,29 +619,38 @@ def bulk_calling():
             max_retry = request.form["max_retry"]
             retry_time = request.form["retry_time"]
             voiceid = "83574"
-            print("all data fetched")
+            app.logger.debug("all data fetched")
 
             file_name = numberfile.filename
             filepath = f"static/upload/{file_name}"
             numberfile.save(filepath)
-            print("file save successfully")
+            app.logger.debug("file save successfully")
             exten = file_name.split(".")[-1]
             if exten=="csv":
                 df = pd.read_csv(filepath)
             else:
                 df = pd.read_excel(filepath)
             
-
             all_numbers = list(df["numbers"])
-            all_numbers_string = ""
-            for var in all_numbers:
-                all_numbers_string+=f",{var}"
+            user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+            user_points = list(user_points)
+            points = user_points[0]["points"]
+            if len(all_numbers)>points:
+                flash("Please recharge your account, don't enough points you have...", "warning")
+            else:
+                all_numbers_string = ""
+                for var in all_numbers:
+                    all_numbers_string+=f",{var}"
 
-            calling_happens(voiceid, all_numbers_string, max_retry, campaign_name, retry_time)
-            print("completed")
-            return render_template("user/calling_system.html", all_audio_ids=all_audio_ids)
+                flag_mapping = calling_happens(voiceid, all_numbers_string, max_retry, campaign_name, retry_time)
+                app.logger.debug("completed")
+                if flag_mapping:
+                    flash("calling start successfully...", "success")
+                else:
+                    flash("Voice call Schedulled Time between 7AM to 7PM")
+            return render_template("calling_system.html", all_audio_ids=all_audio_ids, username=username)
         else:
-            return render_template("user/calling_system.html", all_audio_ids=all_audio_ids)
+            return render_template("calling_system.html", all_audio_ids=all_audio_ids, username=username)
         # all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
         # all_audio_list = []
         # data_status = "no_data"
@@ -586,7 +677,73 @@ def sample_file():
     except Exception as e:
         app.logger.debug(f"error in sample file download {e}")
         return redirect(url_for('sample_file', _external=True, _scheme=secure_type))
+    
+@app.route('/voice_callback', methods=['GET', 'POST'])
+def voice_callback():
+    try:
+        app.logger.debug(f"requestt data for text: {request.text}")
+        app.logger.debug(f"requestt data for form: {request.form}")
+        app.logger.debug(f"requestt data for data: {request.data}")
+        
 
+    except Exception as e:
+        app.logger.debug(f"error in voice callback {e}")
+        return redirect(url_for('voice_callback', _external=True, _scheme=secure_type))
+    
+@app.route("/view_logs", methods=['GET'])
+def view_logs():
+    try:
+        file = os.path.abspath("server.log")
+        lines = []
+        with open(file, "r") as f:
+            lines += f.readlines()
+        return render_template("logs.html", lines=lines)
+
+    except Exception as e:
+        app.logger.debug(f"Error in show log api route : {e}")
+        return redirect(url_for('view_logs', _external=True, _scheme=secure_type))
+    
+@app.route("/download_logs", methods=['GET'])
+def download_logs():
+    try:
+        file = os.path.abspath("server.log")
+        return send_file(file, as_attachment=True)
+
+    except Exception as e:
+        app.logger.debug(f"Error in download api route : {e}")
+        return redirect(url_for('download_logs', _external=True, _scheme=secure_type))
+
+@app.route("/deletedata", methods=["GET", "POST"])
+def deletedata():
+    try:
+        login_dict = session["login_dict"]
+        user_id = login_dict.get("user_id")
+        type = request.args.get("type")
+        if type=="audio":
+            audio_path = request.args.get("audio_path")
+            condition_dict = {"user_id": user_id, "audio_file": audio_path}
+            update_mongo_data(app, db, "audio_store", condition_dict, {"file_status": "inactive"})
+            flash("Delete data successfully...", "success")
+            return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
+
+    except Exception as e:
+        app.logger.debug(f"error in sample file download {e}")
+        flash("Please try again...", "danger")
+        return redirect(url_for('dashboard', _external=True, _scheme=secure_type))
+
+@app.route('/campaign_details', methods=['GET', 'POST'])
+@token_required
+def campaign_details():
+    try:
+        login_dict = session.get("login_dict", {})
+        username = login_dict.get("username", "")
+        return render_template("campaign_details.html", username=username)
+
+    except Exception as e:
+        app.logger.debug(f"error in campaign_details route: {e}")
+        return redirect(url_for('campaign_details', _external=True, _scheme=secure_type))
   
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=2424, debug=True)

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+
+<head>
+   <!--Title-->
+	<title>Dailogwave - Login</title>
+
+	<!-- Meta -->
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="author" content="DexignZone">
+	<meta name="robots" content="index, follow">
+
+	<meta name="keywords" content="Mophy, Payment Admin Dashboard, Bootstrap Template, FrontEnd, Web Application, Payment Management, Responsive Design, User Experience, Customizable, Modern UI, Dashboard Template, Admin Panel, Bootstrap 4, HTML5, CSS3, JavaScript, Finance, Payment Gateway, Admin Template, UI Kit, SASS, SCSS, CRM, Analytics, Responsive Dashboard, responsive admin dashboard, sales dashboard, ui kit, web app, Admin Dashboard, Template, Admin, CMS pages, Authentication, FrontEnd Integration, Web Application UI, Bootstrap Framework, User Interface Kit, Financial Dashboard, SASS Integration, Customizable Template, Payment Gateway, HTML5/CSS3, CRM Dashboard, Analytics Dashboard, Admin Dashboard UI, Mobile-Friendly Design, UI Components, Dashboard Widgets, Dashboard Framework, Data Visualization, User Experience (UX), Dashboard Widgets, Real-time Analytics, Cross-Browser Compatibility, Interactive Charts, Payment Processing, Performance Optimization, Multi-Purpose Template, Efficient Admin Tools, Task Management, Modern Web Technologies, Payment Tracking, Responsive Tables, Dashboard Widgets, Invoice Management, Access Control, Modular Design, Payment History, Trend Analysis, User-Friendly Interface">
+
+	<meta name="description" content="Explore the power of Mophy – a sleek and feature-rich Payment Admin Dashboard Bootstrap Template with a seamlessly integrated FrontEnd. Effortlessly manage your payment processes and elevate user experiences with this modern, responsive, and customizable solution. Unlock a world of possibilities in payment administration and frontend design with Mophy – your key to streamlined and visually stunning web applications.">
+
+	<meta property="og:title" content="Mophy - Payment Admin Dashboard Bootstrap Template + FrontEnd | DexignZone">
+	<meta property="og:description" content="Explore the power of Mophy – a sleek and feature-rich Payment Admin Dashboard Bootstrap Template with a seamlessly integrated FrontEnd. Effortlessly manage your payment processes and elevate user experiences with this modern, responsive, and customizable solution. Unlock a world of possibilities in payment administration and frontend design with Mophy – your key to streamlined and visually stunning web applications.">
+	<meta property="og:image" content="social-image.png">
+
+	<meta name="format-detection" content="telephone=no">
+
+	<meta name="twitter:title" content="Mophy - Payment Admin Dashboard Bootstrap Template + FrontEnd | DexignZone">
+	<meta name="twitter:description" content="Explore the power of Mophy – a sleek and feature-rich Payment Admin Dashboard Bootstrap Template with a seamlessly integrated FrontEnd. Effortlessly manage your payment processes and elevate user experiences with this modern, responsive, and customizable solution. Unlock a world of possibilities in payment administration and frontend design with Mophy – your key to streamlined and visually stunning web applications.">
+	<meta name="twitter:image" content="social-image.png">
+	<meta name="twitter:card" content="summary_large_image">
+
+	<!-- MOBILE SPECIFIC -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!-- Favicon icon -->
+	<link rel="icon" type="static/assets/image/png" sizes="16x16" href="static/assets/images/favicon.png">
+	<link href="static/assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet">
+    <link class="main-css" href="static/assets/css/style.css" rel="stylesheet">
+	
+</head>
+
+<body class="h-100">
+    <div class="login-account">
+		<div class="row h-100">
+			<div class="col-lg-6 align-self-start">
+				<div class="account-info-area" style="background-image: url(static/assets/images/rainbow.gif)">
+					<div class="login-content">
+						<p class="sub-title">Log in to your user dashboard with your credentials</p>
+						<h1 class="title">The Evolution of <span>Dailogwave</span></h1>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-6 col-md-7 col-sm-12 mx-auto align-self-center">
+				<div class="login-form">
+					<div class="login-head">
+						<h3 class="title">Welcome Back</h3>
+						<p>Login page allows users to enter login credentials for authentication and access to secure content.</p>
+					</div>
+					<div class="row">
+						<div class="col-sm-12">
+						  <div class="col-md-auto" id="remove_tag" style="margin: 10px">
+							{% with messages = get_flashed_messages(with_categories=true)
+							%} {% if messages %} {% for category, message in messages %}
+							<div class="alert alert-{{category}} alert-dismissable" role="alert" id="inside_alert">
+							  {{message}}
+							</div>
+							{% endfor %} {% endif %} {% endwith %}
+						  </div>
+						</div>
+					  </div>
+					<h6 class="login-title"><span>Login</span></h6>
+					<form method="post" action="/" enctype="multipart/form-data">
+						<div class="mb-4">
+							<label class="form-label required">Username / Email</label>
+							<input type="text" value="{{email}}" name="email" class="form-control" placeholder="hello@example.com" required>
+						</div>
+						<div class="mb-4 position-relative">
+							<label class="mb-1 form-label required">Password</label>
+							<input type="password" value="{{password}}" name="password" id="dz-password" class="form-control" placeholder="*****" required>
+							<span class="show-pass eye">
+							
+								<i class="fa fa-eye-slash"></i>
+								<i class="fa fa-eye"></i>
+							
+							</span>
+						</div>
+						<div class="form-row d-flex justify-content-between mt-4 mb-2">
+							<div class="mb-4">
+								<div class="form-check custom-checkbox mb-3">
+									<input type="checkbox" class="form-check-input" id="customCheckBox1">
+									<label class="form-check-label" for="customCheckBox1">Remember my preference</label>
+								</div>
+							</div>
+							<div class="mb-4">
+								<a href="/forgot_password" class="btn-link text-primary">Forgot Password?</a>
+							</div>
+						</div>
+						<div class="text-center mb-4">
+							<button type="submit" class="btn btn-primary btn-block">Login</button>
+						</div>
+						<p class="text-center">Not registered?  
+							<a class="btn-link text-primary" href="/register">Register</a>
+						</p>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+	<script src="static/assets/vendor/global/global.min.js"></script>
+	<script src="static/assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+	<script src="static/assets/js/custom.min.js"></script>
+	<script src="static/assets/js/demo.js"></script>
+
+</body>
+</html>

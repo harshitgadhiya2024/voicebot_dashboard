@@ -19,3 +19,4 @@ eventlet
 gevent-websocket
 python-dotenv
 pillow
+audioread
