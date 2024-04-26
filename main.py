@@ -282,7 +282,7 @@ def forgot_password():
                 server_password = app.config['MAIL_PASSWORD']
                 subject_title = "OTP Received"
                 mail_format = f"Hello There,\n I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.\nTo reset your password,\nplease follow the link below: \nClick Here \nPlease note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.\nIf you continue to experience issues or did not request a password reset, please contact our support team for further assistance.\nThank you for using Website.\n\nBest regards,\nHarshit Gadhiya"
-                html_format = f"<p>Hello There,</p><p> I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.</p><p>To reset your password,</p><p>please follow the link below: </p><p><a href='http://127.0.0.1:5000/update_password?id={type}-*{id_data}'><b>Click Here</b></a></p><p>Please note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.</p><p>If you continue to experience issues or did not request a password reset, please contact our support team for further assistance.</p><p>Thank you for using the Website.</p><br><p>Best regards,<br>Harshit Gadhiya</p>"
+                html_format = f"<p>Hello There,</p><p> I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.</p><p>To reset your password,</p><p>please follow the link below: </p><p><a href='http://13.201.1.150/update_password?id={type}-*{id_data}'><b>Click Here</b></a></p><p>Please note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.</p><p>If you continue to experience issues or did not request a password reset, please contact our support team for further assistance.</p><p>Thank you for using the Website.</p><br><p>Best regards,<br>Harshit Gadhiya</p>"
                 attachment_all_file = []
                 sending_email_mail(app, [email], subject_title, mail_format, html_format, server_username,
                                    server_password, server_host, int(server_port), attachment_all_file)
@@ -471,10 +471,10 @@ def save_audio():
         app.config["userbase_recording"][username] = {}
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
-        download_file_path = f"http://127.0.0.1:5000/download/{userfile_name}"
+        download_file_path = f"http://13.201.1.150/download/{userfile_name}"
 
-        # res_upload = upload_api(download_file_path, userfile_name, "wav")
-        res_upload = True
+        res_upload = upload_api(download_file_path, userfile_name, "wav")
+        # res_upload = True
         if res_upload:
 
             get_duraction = get_audio_duration(filename)
@@ -534,10 +534,10 @@ def upload_audio_file():
         app.config["userbase_recording"][username] = {}
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
-        download_file_path = f"http://127.0.0.1:5000/download/{userfile_name}"
+        download_file_path = f"http://13.201.1.150/download/{userfile_name}"
 
-        # res_upload = upload_api(download_file_path, userfile_name, "wav")
-        res_upload = True
+        res_upload = upload_api(download_file_path, userfile_name, "wav")
+        # res_upload = True
         if res_upload:
             get_duraction = get_audio_duration(filename)
             get_duraction = int(get_duraction)
@@ -618,7 +618,6 @@ def bulk_calling():
             numberfile = request.files['numberfile']
             max_retry = request.form["max_retry"]
             retry_time = request.form["retry_time"]
-            voiceid = "83574"
             app.logger.debug("all data fetched")
 
             file_name = numberfile.filename
@@ -651,18 +650,7 @@ def bulk_calling():
             return render_template("calling_system.html", all_audio_ids=all_audio_ids, username=username)
         else:
             return render_template("calling_system.html", all_audio_ids=all_audio_ids, username=username)
-        # all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
-        # all_audio_list = []
-        # data_status = "no_data"
-        # for var in all_audio_data:
-        #     if var["file_status"] == "active":
-        #         del var["_id"]
-        #         all_audio_list.append(var)
-
-        # if len(all_audio_list)!=0:
-        #     data_status = "data"
-
-
+        
     except Exception as e:
         app.logger.debug(f"error in upload audio route {e}")
         return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
