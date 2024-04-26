@@ -559,7 +559,7 @@ def upload_audio_file():
         audio_file.save(filename)
         download_file_path = f"http://13.201.1.150/download/{userfile_name}"
 
-        res_upload = upload_api(download_file_path, userfile_name, "wav")
+        res_upload,voice_id = upload_api(download_file_path, userfile_name, "wav")
         # res_upload = True
         if res_upload:
             get_duraction = get_audio_duration(filename)
@@ -570,12 +570,12 @@ def upload_audio_file():
             
             register_dict = {
                 "user_id": login_dict["user_id"],
-                "audio_id": "pending",
+                "audio_id": voice_id,
                 "audio_file": filename,
                 "duration": get_duraction,
                 "credits": credits,
                 "download_file_path": download_file_path,
-                "status": "pending",
+                "status": "active",
                 "file_status": "active"
             }
 
