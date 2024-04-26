@@ -104,7 +104,7 @@ def upload_api(filepath, filename, exten):
         payload = {}
         headers = {}
 
-        response = requests.request("GET", url, headers=headers, data=payload)
+        response = requests.request("POST", url, headers=headers, data=payload)
 
         app.logger.debug(f"your audio upload request is: {response.text}")
 
