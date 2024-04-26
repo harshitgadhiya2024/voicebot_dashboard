@@ -692,6 +692,13 @@ def sample_file():
 @app.route('/voice_callback', methods=['GET', 'POST'])
 def voice_callback():
     try:
+        number_id = request.args.get("number_id")
+        campaign_id = request.args.get("campaign_id")
+        answer_time = request.args.get("answer_time")
+        status = request.args.get("status")
+        extention = request.args.get("extention")
+        number = request.args.get("number")
+        app.logger.debug(f"data for calling: number_id:{number_id}, campaign_id: {campaign_id}, answer: {answer_time}, status: {status}, extension: {extention}, number: {number}")
         app.logger.debug(f"requestt data for text: {request.text}")
         app.logger.debug(f"requestt data for form: {request.form}")
         app.logger.debug(f"requestt data for data: {request.data}")
@@ -757,4 +764,4 @@ def campaign_details():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80, debug=True)
+    app.run(host="0.0.0.0", port=80)
