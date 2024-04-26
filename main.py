@@ -70,7 +70,8 @@ def allowed_photos(filename):
 def calling_happens(voice_file_id, numbers, max_retry, campaign_name,retry_wait_time):
     try:
         app.logger.debug("coming to call api")
-        url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}"
+        callback_url = "http://13.201.1.150/voice_callback"
+        url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}&callback_event={callback_url}&callback_url={callback_url}"
 
         payload = json.dumps({})
         headers = {
