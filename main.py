@@ -71,7 +71,8 @@ def calling_happens(voice_file_id, numbers, max_retry, campaign_name,retry_wait_
     try:
         app.logger.debug("coming to call api")
         callback_url = "http://13.201.1.150/voice_callback"
-        url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}&callback_event={callback_url}&callback_url={callback_url}"
+        cli_number = "8062364086"
+        url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}&callback_event={callback_url}&callback_url={callback_url}&cli_number={cli_number}"
 
         payload = json.dumps({})
         headers = {
@@ -700,7 +701,19 @@ def voice_callback():
         extention = request.args.get("extention")
         number = request.args.get("number")
         app.logger.debug(f"data for calling: number_id:{number_id}, campaign_id: {campaign_id}, answer: {answer_time}, status: {status}, extension: {extention}, number: {number}")
-        
+        if status=="ANSWERED":
+            register_dict = {
+                "number_id": number_id,
+                "campaign_id": campaign_id,
+                "answer_time": answer_time,
+                "status": status,
+                "extention": extention,
+                "number": number
+            }
+
+            data_added(app, db, "campaign_details", register_dict)
+
+        return {"status_code": 200}        
 
     except Exception as e:
         app.logger.debug(f"error in voice callback {e}")
