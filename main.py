@@ -110,12 +110,14 @@ def upload_api(filepath, filename, exten):
         response = requests.request("POST", url, headers=headers, data=payload)
 
         app.logger.debug(f"your audio upload request is: {response.text}")
+        response_data = json.loads(response.text)
+        get_id = response_data.get("voice_clip_id")
 
-        return True
+        return True, get_id
         
     except Exception as e:
         app.logger.debug(f"Error in upload audio api: {e}")
-        return False
+        return False, "none"
 
 
 def token_required(func):
@@ -455,6 +457,24 @@ def dashboard():
         app.logger.debug(f"error is {e}")
         return redirect(url_for('login', _external=True, _scheme=secure_type))
     
+@app.route("/clean_logs", methods=["GET", "POST"])
+def clean_logs():
+    try:
+        file_path = os.path.abspath("server.log")
+        # Delete the file if it exists
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        # Recreate the file
+        with open(file_path, 'w'):
+            pass
+
+        return redirect(url_for('view_logs', _external=True, _scheme=secure_type))
+
+    except Exception as e:
+        app.logger.debug(f"Error in main route: {e}")
+        return redirect(url_for('view_logs', _external=True, _scheme=secure_type))
+    
 @app.route('/save_audio', methods=['GET', 'POST'])
 @token_required
 def save_audio():
@@ -476,7 +496,7 @@ def save_audio():
         audio_file.save(filename)
         download_file_path = f"http://13.201.1.150/download/{userfile_name}"
 
-        res_upload = upload_api(download_file_path, userfile_name, "wav")
+        res_upload, voice_id = upload_api(download_file_path, userfile_name, "wav")
         # res_upload = True
         if res_upload:
 
@@ -488,12 +508,12 @@ def save_audio():
 
             register_dict = {
                 "user_id": login_dict["user_id"],
-                "audio_id": "pending",
+                "audio_id": voice_id,
                 "audio_file": filename,
                 "duration": get_duraction,
                 "credits": credits,
                 "download_file_path": download_file_path,
-                "status": "pending",
+                "status": "active",
                 "file_status": "active"
             }
 
