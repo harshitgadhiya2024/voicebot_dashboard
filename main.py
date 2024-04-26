@@ -102,7 +102,10 @@ def upload_api(filepath, filename, exten):
         url = f"https://panelv2.cloudshope.com/api/upload_voice_clip?voice_clip_path={filepath}&file_name={filename}&extension={exten}"
 
         payload = {}
-        headers = {}
+        headers = {
+            'Authorization': 'Bearer 356950|bF0Z79Rj0BDUWcklS3uXTjPWqzqC9QBXbEkKwOuY',
+            'Content-Type': 'application/json'
+        }
 
         response = requests.request("POST", url, headers=headers, data=payload)
 
