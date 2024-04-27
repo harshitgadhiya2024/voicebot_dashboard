@@ -262,16 +262,22 @@
                                     <table class="table table-responsive-md">
                                         <thead>
                                             <tr>
-                                                <th>Compaign Name</th>
-                                                <th>Answered</th>
-                                                <th>Not Answered</th>
+                                                <th>Compaign ID</th>
                                                 <th>Total Calls</th>
+                                                <th>Total Answered</th>
+                                                <th>Total Busy</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>
+                                            {% for var in all_user_id_data %}
                                             <tr>
+                                                <td>{{var["campaign_id"]}}</td>
+                                                <td>{{var["total_calls"]}}</td>
+                                                <td>{{var["total_answered"]}}</td>
+                                                <td>{{var["total_busy"]}}</td>
                                             </tr>
+                                            {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>

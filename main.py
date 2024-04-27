@@ -18,7 +18,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
 from constant import constant_data
-from operations.common_func import (password_validation, validate_phone_number, logger_con, sending_email_mail)
+from operations.common_func import (password_validation, get_timestamp, validate_phone_number, logger_con, sending_email_mail)
 from operations.mongo_connection import (mongo_connect, data_added, find_all_data, find_spec_data, update_mongo_data)
 import json, requests
 import pandas as pd
@@ -83,13 +83,14 @@ def calling_happens(voice_file_id, numbers, max_retry, campaign_name,retry_wait_
         response = requests.request("POST", url, headers=headers, data=payload)
 
         response_text = json.loads(response.text)
+        
         app.logger.debug(f"response for calling api: {response.text}")
         flag = True
         status = response_text.get("status")
         if status=="failed":
             flag=False
-        
-        return flag
+        campaign_id = response_text.get("Campaign_id", "")
+        return flag, campaign_id
 
     except Exception as e:
         app.logger.debug(f"Error in calling happens function: {e}")
@@ -361,8 +362,8 @@ def logout():
         app.logger.debug(f"error is {e}")
         return redirect(url_for('login', _external=True, _scheme=secure_type))
 
-@app.route("/register", methods=["GET", "POST"])
-def register():
+@app.route("/register_calling_system", methods=["GET", "POST"])
+def register_calling_system():
     try:
         if request.method=="POST":
             fullname = request.form["fullname"]
@@ -666,10 +667,40 @@ def bulk_calling():
                 for var in all_numbers:
                     all_numbers_string+=f",{var}"
 
-                flag_mapping = calling_happens(voiceid, all_numbers_string, max_retry, campaign_name, retry_time)
+                flag_mapping,campaign_id  = calling_happens(voiceid, all_numbers_string, max_retry, campaign_name, retry_time)
                 app.logger.debug("completed")
                 if flag_mapping:
-                    flash("calling start successfully...", "success")
+                    register_dict_calling = {
+                        "user_id": user_id,
+                        "campaign_id": str(campaign_id),
+                        "total_calls": len(all_numbers),
+                        "total_answered": 0,
+                        "total_busy": 0,
+                        "timestamp": get_timestamp(app)
+                    }
+                    data_added(app, db, "campaign_details", register_dict_calling)
+
+                    for number_call in all_numbers:
+                        new_mapping_dict = {
+                            "user_id": user_id,
+                            "campaign_id": str(campaign_id),
+                            "number_id": "-",
+                            "number": str(number_call),
+                            "answer_time": "-",
+                            "status": "-",
+                            "extension": "-",
+                            "timestamp": get_timestamp(app)
+                        }
+                        data_added(app, db, "user_campaign_details", new_mapping_dict)
+
+                    all_points_data = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+                    all_points_data = list(all_points_data)
+                    campaigns_total = all_points_data[0]["campaigns"]
+                    totalcalls = all_points_data[0]["calls"]
+
+                    update_mongo_data(app, db, "points_mapping", {"user_id": user_id}, {"campaigns": int(campaigns_total)+1, "calls": int(totalcalls)+len(all_numbers)})
+
+                    flash("Calling start successfully...", "success")
                 else:
                     flash("Voice call Schedulled Time between 7AM to 7PM")
             return render_template("calling_system.html", all_audio_ids=all_audio_ids, username=username)
@@ -700,18 +731,38 @@ def voice_callback():
         status = request.args.get("status")
         extention = request.args.get("extention")
         number = request.args.get("number")
+        number = number[1:]
         app.logger.debug(f"data for calling: number_id:{number_id}, campaign_id: {campaign_id}, answer: {answer_time}, status: {status}, extension: {extention}, number: {number}")
-        if status=="ANSWERED":
-            register_dict = {
+        if status=="ANSWERED" or status=="BUSY":
+            all_user_campaign = find_spec_data(app, db, "campaign_details", {"campaign_id": campaign_id})
+            all_user_campaign = list(all_user_campaign)
+            user_id = all_user_campaign[0]["user_id"]
+
+            all_user_data = find_spec_data(app, db, "points_mapping", {"user_id": int(user_id)})
+            all_user_data = list(all_user_data)
+            points = all_user_data[0]["points"]
+
+            all_campaign_data = find_spec_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id})
+            all_campaign_data = list(all_campaign_data)
+            total_answered = all_campaign_data[0]["total_answered"]
+            total_busy = all_campaign_data[0]["total_busy"]
+
+            if status=="ANSWERED":
+                update_mongo_data(app, db, "points_mapping", {"user_id": int(user_id)}, {"points": int(points)-1})
+                update_mongo_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id}, {"total_answered": int(total_answered)+1})
+
+            if status == "BUSY":
+                update_mongo_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id}, {"total_busy": int(total_busy)+1})
+
+            new_user_mapping_dict = {
                 "number_id": number_id,
-                "campaign_id": campaign_id,
                 "answer_time": answer_time,
                 "status": status,
-                "extention": extention,
-                "number": number
+                "extension": extention,
+                "timestamp": get_timestamp(app)
             }
 
-            data_added(app, db, "campaign_details", register_dict)
+            update_mongo_data(app, db, "user_campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id, "number": str(number)}, new_user_mapping_dict)
 
         return {"status_code": 200}        
 
@@ -766,7 +817,11 @@ def campaign_details():
     try:
         login_dict = session.get("login_dict", {})
         username = login_dict.get("username", "")
-        return render_template("campaign_details.html", username=username)
+        user_id = login_dict.get("user_id", "")
+        all_user_id_data = find_spec_data(app, db, "campaign_details", {"user_id": user_id})
+        all_user_id_data = list(all_user_id_data)
+        all_user_id_data = all_user_id_data[::-1]
+        return render_template("campaign_details.html", username=username,all_user_id_data=all_user_id_data)
 
     except Exception as e:
         app.logger.debug(f"error in campaign_details route: {e}")
