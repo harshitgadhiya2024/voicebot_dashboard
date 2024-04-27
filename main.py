@@ -646,7 +646,7 @@ def bulk_calling():
             retry_time = request.form["retry_time"]
             app.logger.debug(f"all data fetched and voiceid is {voiceid}")
 
-            audio_user_data = find_spec_data(app, db, "audio_store", {"audio_id", int(voiceid)})
+            audio_user_data = find_spec_data(app, db, "audio_store", {"audio_id": int(voiceid)})
             audio_user_data = list(audio_user_data)
             app.logger.debug(f"data of audio user: {audio_user_data}")
             points_min = audio_user_data[0]["credits"]
