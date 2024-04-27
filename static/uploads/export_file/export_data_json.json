@@ -1,0 +1,22 @@
+[
+  {
+    "user_id": 2678348492706544,
+    "campaign_id": "20278",
+    "number_id": "35185526",
+    "number": "9316727742",
+    "answer_time": "0",
+    "status": "BUSY",
+    "extension": "-",
+    "timestamp": "04-27-2024 09:14:37"
+  },
+  {
+    "user_id": 2678348492706544,
+    "campaign_id": "20278",
+    "number_id": "35185525",
+    "number": "7069439077",
+    "answer_time": "16",
+    "status": "ANSWERED",
+    "extension": "-",
+    "timestamp": "04-27-2024 09:13:23"
+  }
+]

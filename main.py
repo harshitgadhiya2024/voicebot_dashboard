@@ -43,6 +43,7 @@ app.config['MAIL_USE_SSL'] = True
 app.config["userbase_recording"] = {}
 app.config['voice_folder'] = "static/uploaded_audio/"
 app.config["voice_details"] = {}
+app.config["EXPORT_UPLOAD_FOLDER"] = 'static/uploads/export_file/'
 
 # handling our application secure type like http or https
 secure_type = constant_data["secure_type"]
@@ -678,6 +679,7 @@ def bulk_calling():
                     register_dict_calling = {
                         "user_id": user_id,
                         "campaign_id": str(campaign_id),
+                        "campaign_name": campaign_name,
                         "total_calls": len(all_numbers),
                         "total_answered": 0,
                         "total_busy": 0,
@@ -689,6 +691,7 @@ def bulk_calling():
                         new_mapping_dict = {
                             "user_id": user_id,
                             "campaign_id": str(campaign_id),
+                            "campaign_name": campaign_name,
                             "number_id": "-",
                             "number": str(number_call),
                             "answer_time": "-",
@@ -839,7 +842,78 @@ def campaign_details():
         app.logger.debug(f"error in campaign_details route: {e}")
         return redirect(url_for('campaign_details', _external=True, _scheme=secure_type))
   
+@app.route('/campaign_info', methods=['GET', 'POST'])
+@token_required
+def campaign_info():
+    try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
+        campaign_id = request.args.get("campaign_id", "")
+        all_campaign_data = find_spec_data(app, db, "user_campaign_details", {"campaign_id": campaign_id})
+        all_campaign_data = list(all_campaign_data)
+        all_campaign_data = all_campaign_data[::-1]
+        return render_template("each_compaign.html", all_campaign_data=all_campaign_data, username=username)
+        
+    except Exception as e:
+        app.logger.debug(f"error in upload audio route {e}")
+        return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
+    
+def export_panel_data(app, database_data, panel, type):
+    """
+    export data for different format like csv, excel and csv
 
+    :param app: app-name
+    :param database_data: database data
+    :param type: excel, csv, json
+    :return: filename
+    """
+
+    try:
+        if type == "excel":
+            output_path = os.path.join(app.config["EXPORT_UPLOAD_FOLDER"], f"export_{panel}_excel.xlsx")
+            df = pd.DataFrame(database_data)
+            df.to_excel(output_path, index=False)
+        elif type == "csv":
+            output_path = os.path.join(app.config["EXPORT_UPLOAD_FOLDER"], f"export_{panel}_csv.csv")
+            df = pd.DataFrame(database_data)
+            df.to_csv(output_path, index=False)
+        else:
+            output_path = os.path.join(app.config["EXPORT_UPLOAD_FOLDER"], f"export_{panel}_json.json")
+            with open(output_path, 'w') as json_file:
+                json.dump(database_data, json_file, indent=2)
+
+        return output_path
+
+    except Exception as e:
+        app.logger.debug(f"Error in export data from database: {e}")
+
+    
+@app.route('/export_data', methods=['GET', 'POST'])
+@token_required
+def export_data():
+    try:
+        login_dict = session.get("login_dict", {})
+        type = request.args.get("type", "")
+        campaign_id = request.args.get("campaign_id", "")
+        print(campaign_id)
+        db = client["voicebot"]
+        coll = db["user_campaign_details"]
+        all_campaign_data = coll.find({"campaign_id": campaign_id})
+        all_campaign_data = list(all_campaign_data)
+        print(all_campaign_data)
+        all_data = []
+        for each_res in all_campaign_data:
+            del each_res["_id"]
+            all_data.append(each_res)
+        panel = "data"
+        output_path = export_panel_data(app, all_data, panel, type)
+        return send_file(output_path, as_attachment=True)
+        
+    except Exception as e:
+        app.logger.debug(f"error in upload audio route {e}")
+        return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
+  
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80)
+    app.run(host="0.0.0.0", port=80, debug=True)
