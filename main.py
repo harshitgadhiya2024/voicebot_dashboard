@@ -752,7 +752,7 @@ def voice_callback():
 
             all_point_user_data = find_spec_data(app, db, "data_points_mapping", {"campaign_id": campaign_id})
             all_point_user_data = list(all_point_user_data)
-            points_min = all_user_data[0]["points_min"]
+            points_min = all_point_user_data[0]["points_min"]
 
             all_campaign_data = find_spec_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id})
             all_campaign_data = list(all_campaign_data)
