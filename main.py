@@ -646,6 +646,10 @@ def bulk_calling():
             retry_time = request.form["retry_time"]
             app.logger.debug("all data fetched")
 
+            audio_user_data = find_spec_data(app, db, "audio_store", {"audio_id", int(voiceid)})
+            audio_user_data = list(audio_user_data)
+            points_min = audio_user_data[0]["credits"]
+
             file_name = numberfile.filename
             filepath = f"static/upload/{file_name}"
             numberfile.save(filepath)
@@ -698,6 +702,9 @@ def bulk_calling():
                     campaigns_total = all_points_data[0]["campaigns"]
                     totalcalls = all_points_data[0]["calls"]
 
+                    points_data_mapping = {"campaign_id": str(campaign_id), "points_min": points_min}
+                    data_added(app, db, "data_points_mapping", points_data_mapping)
+
                     update_mongo_data(app, db, "points_mapping", {"user_id": user_id}, {"campaigns": int(campaigns_total)+1, "calls": int(totalcalls)+len(all_numbers)})
 
                     flash("Calling start successfully...", "success")
@@ -742,13 +749,17 @@ def voice_callback():
             all_user_data = list(all_user_data)
             points = all_user_data[0]["points"]
 
+            all_point_user_data = find_spec_data(app, db, "data_points_mapping", {"campaign_id": campaign_id})
+            all_point_user_data = list(all_point_user_data)
+            points_min = all_user_data[0]["points_min"]
+
             all_campaign_data = find_spec_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id})
             all_campaign_data = list(all_campaign_data)
             total_answered = all_campaign_data[0]["total_answered"]
             total_busy = all_campaign_data[0]["total_busy"]
 
             if status=="ANSWERED":
-                update_mongo_data(app, db, "points_mapping", {"user_id": int(user_id)}, {"points": int(points)-1})
+                update_mongo_data(app, db, "points_mapping", {"user_id": int(user_id)}, {"points": int(points)-int(points_min)})
                 update_mongo_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id}, {"total_answered": int(total_answered)+1})
 
             if status == "BUSY":
