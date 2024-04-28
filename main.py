@@ -115,7 +115,7 @@ def upload_api(filepath, filename, exten):
 
         app.logger.debug(f"your audio upload request is: {response.text}")
         response_data = json.loads(response.text)
-        get_id = response_data.get("voice_clip_id")
+        get_id = response_data["voice_clip_id"]
 
         return True, get_id
         
@@ -499,6 +499,15 @@ def save_audio():
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
         download_file_path = f"http://13.201.1.150/download/{userfile_name}"
+        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+        all_audio_list = []
+        for var in all_audio_data:
+            if var["file_status"] == "active":
+                del var["_id"]
+                all_audio_list.append(var)
+        
+        if len(all_audio_list)!=0:
+            data_status = "data"
 
         res_upload, voice_id = upload_api(download_file_path, userfile_name, "wav")
         # res_upload = True
@@ -540,6 +549,7 @@ def save_audio():
 
     except Exception as e:
         app.logger.debug(f"error in save audio route {e}")
+        flash("Please try again...", "danger")
         return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
 
 @app.route('/upload_audio_file', methods=['GET', 'POST'])
@@ -562,6 +572,16 @@ def upload_audio_file():
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
         download_file_path = f"http://13.201.1.150/download/{userfile_name}"
+        data_added(app, db, "audio_store", register_dict)
+        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+        all_audio_list = []
+        for var in all_audio_data:
+            if var["file_status"] == "active":
+                del var["_id"]
+                all_audio_list.append(var)
+        
+        if len(all_audio_list)!=0:
+            data_status = "data"
 
         res_upload,voice_id = upload_api(download_file_path, userfile_name, "wav")
         # res_upload = True
@@ -662,7 +682,7 @@ def bulk_calling():
             else:
                 df = pd.read_excel(filepath)
             
-            all_numbers = list(df["numbers"])
+            all_numbers = list(df["number"])
             user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
             user_points = list(user_points)
             points = user_points[0]["points"]
