@@ -194,7 +194,7 @@ def login():
                 return render_template("login.html")
             elif len(user_all_data)>0:
                 user_all_data = user_all_data[0]
-                if check_password_hash(user_all_data["password"], password):
+                if check_password_hash(user_all_data["password"], password) and user_all_data["status"]=="activate":
                     username = user_all_data["username"]
                     email = user_all_data["email"]
                     user_id = user_all_data["user_id"]
@@ -207,7 +207,7 @@ def login():
                     return render_template("login.html")
             else:
                 user_email_data = user_email_data[0]
-                if check_password_hash(user_email_data["password"], password):
+                if check_password_hash(user_email_data["password"], password) and user_email_data["status"]=="activate":
                     username = user_email_data["username"]
                     email = user_email_data["email"]
                     user_id = user_email_data["user_id"]
@@ -227,47 +227,6 @@ def login():
         flash("Please try again...", "danger")
         return redirect(url_for('login', _external=True, _scheme=secure_type))
 
-@app.route("/otp_verification", methods=["GET", "POST"])
-def otp_verification():
-    """
-    That funcation can use otp_verification and new_password set link generate
-    """
-
-    try:
-        email = session.get("otp_dict", {}).get("email", "")
-        if request.method == "POST":
-            get_otp = request.form["otp"]
-            get_otp = int(get_otp)
-            send_otp = session.get("otp", "")
-            if get_otp:
-                login_dict = session.get("login_dict", "nothing")
-                type = login_dict["type"]
-                flash("Login Successfully...", "success")
-                return redirect(url_for(f'{type}_dashboard', _external=True, _scheme=secure_type))
-            else:
-                flash("OTP is wrong. Please enter correct otp...", "danger")
-                return render_template("authentication/otp_verification.html")
-        else:
-            if email:
-                otp = random.randint(100000, 999999)
-                session["otp"] = otp
-                server_host = app.config['MAIL_SERVER']
-                server_port = app.config['MAIL_PORT']
-                server_username = app.config['MAIL_USERNAME']
-                server_password = app.config['MAIL_PASSWORD']
-                subject_title = "OTP Received"
-                mail_format = f"Hello There,\n We hope this message finds you well. As part of our ongoing commitment to ensure the security of your account, we have initiated a verification process.\nYour One-Time Password (OTP) for account verification is: [{otp}]\nPlease enter this OTP on the verification page to complete the process. Note that the OTP is valid for a limited time, so we recommend entering it promptly.\nIf you did not initiate this verification or have any concerns regarding your account security, please contact our support team immediately at help@codescatter.com\n\nThank you for your cooperation.\nBest regards,\nCodescatter"
-                html_format = f'<p>Hello There,</p><p>We hope this message finds you well. As part of our ongoing commitment to ensure the security of your account, we have initiated a verification process.</p><p>Your One-Time Password (OTP) for account verification is: <h2><b>{otp}</h2></b></p><p>Please enter this OTP on the verification page to complete the process. Note that the OTP is valid for a limited time, so we recommend entering it promptly.</p><p>If you did not initiate this verification or have any concerns regarding your account security, please contact our support team immediately at help@codescatter.com</p><p>Thank you for your cooperation.</p><p>Best regards,<br>Codescatter</p>'
-                attachment_all_file = []
-                # sending_email_mail(app, [email], subject_title, mail_format, html_format, server_username,
-                #                    server_password, server_host, int(server_port), attachment_all_file)
-            return render_template("authentication/otp_verification.html")
-
-    except Exception as e:
-        app.logger.debug(f"Error in otp verification route: {e}")
-        flash("Please try again...", "danger")
-        return redirect(url_for('otp_verification', _external=True, _scheme=secure_type))
-
 @app.route("/forgot_password", methods=["GET", "POST"])
 def forgot_password():
     """
@@ -275,38 +234,35 @@ def forgot_password():
     :return: teacher register template
     """
     try:
-        db = client["college_management"]
+        login_dict = session.get("login_dict", "")
+        user_id = login_dict.get("user_id", "")
         if request.method == "POST":
             email = request.form["email"]
-            all_login_data = find_spec_data(app, db, "login_mapping", {"email": email})
-            all_login_data = list(all_login_data)
-            if len(all_login_data)==0:
-                flash("Entered email does not exits Please try with different mail...", "danger")
-                return render_template("authentication/forgat-password.html")
+            user_email_data = find_spec_data(app, db, "user_data", {"email": email})
+            user_email_data = list(user_email_data)
+            if len(user_email_data)==0:
+                flash("Email does not exits Please try with different mail...", "danger")
+                return render_template("forgot-password.html")
             else:
-                login_data = list(all_login_data)[0]
-                type = login_data.get("type", "student")
-                id_data = login_data.get("username", "")
-
                 server_host = app.config['MAIL_SERVER']
                 server_port = app.config['MAIL_PORT']
                 server_username = app.config['MAIL_USERNAME']
                 server_password = app.config['MAIL_PASSWORD']
-                subject_title = "OTP Received"
-                mail_format = f"Hello There,\n I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.\nTo reset your password,\nplease follow the link below: \nClick Here \nPlease note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.\nIf you continue to experience issues or did not request a password reset, please contact our support team for further assistance.\nThank you for using Website.\n\nBest regards,\nHarshit Gadhiya"
-                html_format = f"<p>Hello There,</p><p> I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.</p><p>To reset your password,</p><p>please follow the link below: </p><p><a href='http://dailogwave.site/update_password?id={type}-*{id_data}'><b>Click Here</b></a></p><p>Please note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.</p><p>If you continue to experience issues or did not request a password reset, please contact our support team for further assistance.</p><p>Thank you for using the Website.</p><br><p>Best regards,<br>Harshit Gadhiya</p>"
+                subject_title = "Reset Your Password"
+                mail_format = "Hello There,\n I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.\nTo reset your password,\nplease follow the link below: \nClick Here \nPlease note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.\nIf you continue to experience issues or did not request a password reset, please contact our support team for further assistance.\nThank you for using Website.\n\nBest regards,\nHarshit Gadhiya"
+                html_format = f"<p>Dear customer,<br><br>It seems you've forgotten your Dailogwave account password. No worries!<br><br>Please click the link below to reset your password: <br><br><a href='http://dailogwave.site/update_password?user_id={user_id}'><b>Click Here</b></a><br><br>If you did not request this password reset, please ignore this email.<br><br>Best regards,<br>The Dailogwave Team</p>"
                 attachment_all_file = []
                 sending_email_mail(app, [email], subject_title, mail_format, html_format, server_username,
                                    server_password, server_host, int(server_port), attachment_all_file)
                 flash("Reset password mail sent successfully...", "success")
-                return render_template("authentication/forgot-password.html")
+                return render_template("forgot_password.html")
         else:
-            return render_template("authentication/forgot-password.html")
+            return render_template("forgot_password.html")
 
     except Exception as e:
-        app.logger.debug(f"Error in add teacher data route: {e}")
+        app.logger.debug(f"Error in forgot password route: {e}")
         flash("Please try again...","danger")
-        return redirect(url_for('student_mail', _external=True, _scheme=secure_type))
+        return redirect(url_for('forgot_password', _external=True, _scheme=secure_type))
 
 @app.route("/update_password", methods=["GET", "POST"])
 def update_password():
@@ -315,41 +271,35 @@ def update_password():
     :return: teacher register template
     """
     try:
-        db = client["college_management"]
-        id = request.args.get("id", "nothing")
+        user_id = request.args.get("user_id", "nothing")
         if request.method == "POST":
-            id = session["data_id"]
-            spliting_obj = id.split("-*")
-            username_data = spliting_obj[-1]
-            type = spliting_obj[0]
             password = request.form["password"]
             con_password = request.form["con_password"]
             if not password_validation(app=app, password=password):
                 flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
-                return render_template("forgat-password.html", password=password, con_password=con_password)
+                return render_template("update_password.html", password=password, con_password=con_password)
 
             if not password_validation(app=app, password=con_password):
                 flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
-                return render_template("forgat-password.html", password=password, con_password=con_password)
+                return render_template("update_password.html", password=password, con_password=con_password)
 
             if password==con_password:
                 password = generate_password_hash(password)
-                condition_dict = {"type": type, "username": username_data}
+                condition_dict = {"user_id": int(user_id)}
                 update_mongo_data(app, db, "user_data", condition_dict, {"password": password})
-                update_mongo_data(app, db, "login_mapping", condition_dict, {"password": password})
-                flash("Password Reset Successfully...", "success")
+                flash("Password Update Successfully...", "success")
                 return redirect(url_for('login', _external=True, _scheme=secure_type))
             else:
                 flash("Password or Confirmation Password Does Not Match. Please Enter Correct Details", "danger")
-                return render_template("forgat-password.html", password=password, con_password=con_password)
+                return render_template("update_password.html", password=password, con_password=con_password)
         else:
-            session["data_id"] = id
-            return render_template("authentication/update_password.html", id=id)
+            session["user_id"] = user_id
+            return render_template("update_password.html", user_id=user_id)
 
     except Exception as e:
-        app.logger.debug(f"Error in add teacher data route: {e}")
+        app.logger.debug(f"Error in update password route: {e}")
         flash("Please try again...","danger")
-        return redirect(url_for('student_mail', _external=True, _scheme=secure_type))
+        return redirect(url_for('update_password', _external=True, _scheme=secure_type))
 
 @app.route('/logout', methods=['GET', 'POST'])
 def logout():
@@ -366,8 +316,8 @@ def logout():
         app.logger.debug(f"error is {e}")
         return redirect(url_for('login', _external=True, _scheme=secure_type))
 
-@app.route("/register_calling_system", methods=["GET", "POST"])
-def register_calling_system():
+@app.route("/register", methods=["GET", "POST"])
+def register():
     try:
         if request.method=="POST":
             fullname = request.form["fullname"]
@@ -426,7 +376,7 @@ def register_calling_system():
                 "phone_number": phone,
                 "password": password,
                 "company_name": company_name,
-                "status": "activate",
+                "status": "deactivate",
                 "token": 10
             }  
             app.config["userbase_recording"][username]={}
@@ -944,4 +894,4 @@ def export_data():
   
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80, debug=True)
+    app.run(host="0.0.0.0", port=80)
