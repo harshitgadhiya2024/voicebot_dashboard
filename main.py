@@ -71,7 +71,7 @@ def allowed_photos(filename):
 def calling_happens(voice_file_id, numbers, max_retry, campaign_name,retry_wait_time):
     try:
         app.logger.debug("coming to call api")
-        callback_url = "http://13.201.1.150/voice_callback"
+        callback_url = "http://dailogwave.site/voice_callback"
         cli_number = "8062364086"
         if max_retry=="0" and retry_wait_time=="0":
             url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&campaign_name={campaign_name}&callback_event={callback_url}&callback_url={callback_url}&cli_number={cli_number}"
@@ -294,7 +294,7 @@ def forgot_password():
                 server_password = app.config['MAIL_PASSWORD']
                 subject_title = "OTP Received"
                 mail_format = f"Hello There,\n I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.\nTo reset your password,\nplease follow the link below: \nClick Here \nPlease note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.\nIf you continue to experience issues or did not request a password reset, please contact our support team for further assistance.\nThank you for using Website.\n\nBest regards,\nHarshit Gadhiya"
-                html_format = f"<p>Hello There,</p><p> I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.</p><p>To reset your password,</p><p>please follow the link below: </p><p><a href='http://13.201.1.150/update_password?id={type}-*{id_data}'><b>Click Here</b></a></p><p>Please note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.</p><p>If you continue to experience issues or did not request a password reset, please contact our support team for further assistance.</p><p>Thank you for using the Website.</p><br><p>Best regards,<br>Harshit Gadhiya</p>"
+                html_format = f"<p>Hello There,</p><p> I hope this email finds you well. It has come to our attention that you have requested to reset your password for your APPIACS account. If you did not initiate this request, please disregard this email.</p><p>To reset your password,</p><p>please follow the link below: </p><p><a href='http://dailogwave.site/update_password?id={type}-*{id_data}'><b>Click Here</b></a></p><p>Please note that this link is valid for the next 30 Minutes. After this period, you will need to submit another password reset request.</p><p>If you continue to experience issues or did not request a password reset, please contact our support team for further assistance.</p><p>Thank you for using the Website.</p><br><p>Best regards,<br>Harshit Gadhiya</p>"
                 attachment_all_file = []
                 sending_email_mail(app, [email], subject_title, mail_format, html_format, server_username,
                                    server_password, server_host, int(server_port), attachment_all_file)
@@ -501,7 +501,7 @@ def save_audio():
         app.config["userbase_recording"][username] = {}
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
-        download_file_path = f"http://13.201.1.150/download/{userfile_name}"
+        download_file_path = f"http://dailogwave.site/download/{userfile_name}"
         all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
         all_audio_list = []
         for var in all_audio_data:
@@ -575,7 +575,7 @@ def upload_audio_file():
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
         print("audio save successfully")
-        download_file_path = f"http://13.201.1.150/download/{userfile_name}"
+        download_file_path = f"http://dailogwave.site/download/{userfile_name}"
         all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
         all_audio_list = []
         for var in all_audio_data:
