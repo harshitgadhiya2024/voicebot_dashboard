@@ -52,7 +52,7 @@ secure_type = constant_data["secure_type"]
 mail = Mail(app)
 
 # logger & MongoDB connection
-logger_con(app=app)
+# logger_con(app=app)
 client = mongo_connect(app=app)
 db = client["voicebot"]
 
@@ -564,15 +564,15 @@ def upload_audio_file():
             last_number = app.config["userbase_recording"][username]["last_number"]
         except:
             pass
-
+        
         audio_file = request.files['fileupload']
         userfile_name = username+str(last_number)+".wav"
         filename = app.config["voice_folder"]+userfile_name
         app.config["userbase_recording"][username] = {}
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
+        print("audio save successfully")
         download_file_path = f"http://13.201.1.150/download/{userfile_name}"
-        data_added(app, db, "audio_store", register_dict)
         all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
         all_audio_list = []
         for var in all_audio_data:
@@ -584,6 +584,7 @@ def upload_audio_file():
             data_status = "data"
 
         res_upload,voice_id = upload_api(download_file_path, userfile_name, "wav")
+        print(res_upload, voice_id)
         # res_upload = True
         if res_upload:
             get_duraction = get_audio_duration(filename)
