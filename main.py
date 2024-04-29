@@ -641,6 +641,8 @@ def upload_audio():
 
         if len(all_audio_list)!=0:
             data_status = "data"
+        print(data_status)
+        print(all_audio_list)
 
         return render_template("audio_data.html", all_audio_list=all_audio_list, data_status=data_status,username=username)
 
