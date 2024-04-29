@@ -52,7 +52,7 @@ secure_type = constant_data["secure_type"]
 mail = Mail(app)
 
 # logger & MongoDB connection
-# logger_con(app=app)
+logger_con(app=app)
 client = mongo_connect(app=app)
 db = client["voicebot"]
 
