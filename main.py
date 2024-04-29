@@ -73,7 +73,10 @@ def calling_happens(voice_file_id, numbers, max_retry, campaign_name,retry_wait_
         app.logger.debug("coming to call api")
         callback_url = "http://13.201.1.150/voice_callback"
         cli_number = "8062364086"
-        url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}&callback_event={callback_url}&callback_url={callback_url}&cli_number={cli_number}"
+        if max_retry=="0" and retry_wait_time=="0":
+            url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&campaign_name={campaign_name}&callback_event={callback_url}&callback_url={callback_url}&cli_number={cli_number}"
+        else:
+            url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}&callback_event={callback_url}&callback_url={callback_url}&cli_number={cli_number}"
 
         payload = json.dumps({})
         headers = {
@@ -666,9 +669,11 @@ def bulk_calling():
             campaign_name = request.form["campaign_name"]
             voiceid = request.form["voiceid"]
             numberfile = request.files['numberfile']
-            max_retry = request.form["max_retry"]
-            retry_time = request.form["retry_time"]
+            max_retry = request.form.get("max_retry", "0")
+            retry_time = request.form.get("retry_time", "0")
             app.logger.debug(f"all data fetched and voiceid is {voiceid}")
+            app.logger.debug(f"all data fetched and voiceid is {max_retry}")
+            app.logger.debug(f"all data fetched and voiceid is {retry_time}")
 
             audio_user_data = find_spec_data(app, db, "audio_store", {"audio_id": int(voiceid)})
             audio_user_data = list(audio_user_data)
