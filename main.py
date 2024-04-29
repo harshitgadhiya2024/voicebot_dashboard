@@ -564,7 +564,7 @@ def upload_audio_file():
         username = login_dict["username"]
         last_number = 1
         try:
-            last_number = app.config["userbase_recording"][username]["last_number"]
+            last_number = random.randint(10000000000, 99999999999)
         except:
             pass
         
