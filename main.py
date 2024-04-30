@@ -234,12 +234,11 @@ def forgot_password():
     :return: teacher register template
     """
     try:
-        login_dict = session.get("login_dict", "")
-        user_id = login_dict.get("user_id", "")
         if request.method == "POST":
             email = request.form["email"]
             user_email_data = find_spec_data(app, db, "user_data", {"email": email})
             user_email_data = list(user_email_data)
+            user_id = user_email_data[0]["user_id"]
             if len(user_email_data)==0:
                 flash("Email does not exits Please try with different mail...", "danger")
                 return render_template("forgot-password.html")
