@@ -48,11 +48,8 @@ app.config["EXPORT_UPLOAD_FOLDER"] = 'static/uploads/export_file/'
 # handling our application secure type like http or https
 secure_type = constant_data["secure_type"]
 
-# create mail instance for our application
-mail = Mail(app)
-
 # logger & MongoDB connection
-logger_con(app=app)
+# logger_con(app=app)
 client = mongo_connect(app=app)
 db = client["voicebot"]
 
@@ -504,7 +501,7 @@ def save_audio():
         flash("Please try again...", "danger")
         return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
 
-@app.route('/upload_audio_file', methods=['GET', 'POST'])
+@app.route('/upload_audio_file', methods=['POST'])
 @token_required
 def upload_audio_file():
     try:
@@ -891,6 +888,46 @@ def export_data():
         app.logger.debug(f"error in upload audio route {e}")
         return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
   
+@app.route("/user_update_password", methods=["GET", "POST"])
+@token_required
+def user_update_password():
+    """
+    Handling teacher register process
+    :return: teacher register template
+    """
+    try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
+        if request.method == "POST":
+            password = request.form["password"]
+            con_password = request.form["con_password"]
+            if not password_validation(app=app, password=password):
+                flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
+                return render_template("user_update_password.html", password=password, con_password=con_password)
+
+            if not password_validation(app=app, password=con_password):
+                flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
+                return render_template("user_update_password.html", password=password, con_password=con_password)
+
+            if password==con_password:
+                password = generate_password_hash(password)
+                condition_dict = {"user_id": int(user_id)}
+                update_mongo_data(app, db, "user_data", condition_dict, {"password": password})
+                flash("Password Update Successfully...", "success")
+                return redirect(url_for('login', _external=True, _scheme=secure_type))
+            else:
+                flash("Password or Confirmation Password Does Not Match. Please Enter Correct Details", "danger")
+                return render_template("user_update_password.html", password=password, con_password=con_password)
+        else:
+            session["user_id"] = user_id
+            return render_template("user_update_password.html", user_id=user_id, username=username)
+
+    except Exception as e:
+        app.logger.debug(f"Error in user update password route: {e}")
+        flash("Please try again...","danger")
+        return redirect(url_for('user_update_password', _external=True, _scheme=secure_type))
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=80)

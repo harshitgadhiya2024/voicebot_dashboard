@@ -1215,12 +1215,13 @@ def update_rejected_data_file(app, file_name, rejected_data):
 def sending_email_mail(app, to_m, subject_main, body_text, html_text, username, password_to, host_main, port_main,
                   attachment_all_file):
     try:
-        app.config['MAIL_SERVER'] = host_main
-        app.config['MAIL_PORT'] = port_main
+        app.config['MAIL_SERVER'] = "smtp.gmail.com"
+        app.config['MAIL_PORT'] = 465
         app.config['MAIL_USE_SSL'] = True
-        app.config['MAIL_USERNAME'] = username
-        app.config['MAIL_PASSWORD'] = password_to
+        app.config['MAIL_USERNAME'] = "dailogwave@gmail.com"
+        app.config['MAIL_PASSWORD'] = "trikcmalawzzzvso"
         mail = Mail(app)
+        print("mail configuration successfull")
 
         msg = Message(subject_main, sender=username,
                       recipients=to_m)
@@ -1278,6 +1279,7 @@ def sending_email_mail(app, to_m, subject_main, body_text, html_text, username, 
 
 
     except Exception as e:
+        print(f"Error in sending mail function: {e}")
         app.logger.debug(f"Error in sending mail function: {e}")
         return "failure"
 
