@@ -103,7 +103,7 @@ def get_audio_duration(file_path):
 
 def upload_api(filepath, filename, exten):
     try:
-        url = f"https://panelv2.cloudshope.com/api/upload_voice_clip?Voice_clip_path={filepath}&file_name={filename}&extension={exten}"
+        url = f"https://panelv2.cloudshope.com/api/upload_voice_clip?voice_clip_path={filepath}&file_name={filename}&extension={exten}"
 
         payload = {}
         headers = {
