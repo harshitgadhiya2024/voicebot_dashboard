@@ -643,8 +643,8 @@ def bulk_calling():
             if len(all_numbers)>points:
                 flash("Please recharge your account, don't enough points you have...", "warning")
             else:
-                all_numbers_string = ""
-                for var in all_numbers:
+                all_numbers_string = f"{all_numbers[0]}"
+                for var in all_numbers[1:]:
                     all_numbers_string+=f",{var}"
 
                 flag_mapping,campaign_id  = calling_happens(voiceid, all_numbers_string, max_retry, campaign_name, retry_time)
