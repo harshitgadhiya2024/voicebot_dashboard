@@ -191,27 +191,35 @@ def login():
                 return render_template("login.html")
             elif len(user_all_data)>0:
                 user_all_data = user_all_data[0]
-                if check_password_hash(user_all_data["password"], password) and user_all_data["status"]=="activate":
-                    username = user_all_data["username"]
-                    email = user_all_data["email"]
-                    user_id = user_all_data["user_id"]
-                    token = user_all_data["token"]
-                    session["login_dict"] = {"username": username, "email": email, "user_id": user_id, "token": token}
-                    app.logger.debug(f"Login Dict in session: {session.get('login_dict')}")
-                    return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
+                if check_password_hash(user_all_data["password"], password):
+                    if user_all_data["status"]=="activate":
+                        username = user_all_data["username"]
+                        email = user_all_data["email"]
+                        user_id = user_all_data["user_id"]
+                        token = user_all_data["token"]
+                        session["login_dict"] = {"username": username, "email": email, "user_id": user_id, "token": token}
+                        app.logger.debug(f"Login Dict in session: {session.get('login_dict')}")
+                        return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
+                    else:
+                        flash("Your account does not active. please wait for activation..", "danger")
+                        return render_template("login.html")
                 else:
                     flash("Please use correct credential..", "danger")
                     return render_template("login.html")
             else:
                 user_email_data = user_email_data[0]
-                if check_password_hash(user_email_data["password"], password) and user_email_data["status"]=="activate":
-                    username = user_email_data["username"]
-                    email = user_email_data["email"]
-                    user_id = user_email_data["user_id"]
-                    token = user_email_data["token"]
-                    session["login_dict"] = {"username": username, "email": email, "user_id": user_id, "token": token}
-                    app.logger.debug(f"Login Dict in session: {session.get('login_dict')}")
-                    return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
+                if check_password_hash(user_email_data["password"], password):
+                    if user_email_data["status"]=="activate":
+                        username = user_email_data["username"]
+                        email = user_email_data["email"]
+                        user_id = user_email_data["user_id"]
+                        token = user_email_data["token"]
+                        session["login_dict"] = {"username": username, "email": email, "user_id": user_id, "token": token}
+                        app.logger.debug(f"Login Dict in session: {session.get('login_dict')}")
+                        return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
+                    else:
+                        flash("Your account does not active. please wait for activation..", "danger")
+                        return render_template("login.html")
                 else:
                     flash("Please use correct credential..", "danger")
                     return render_template("login.html")
