@@ -42,7 +42,7 @@
             background-color: #fff;
             /* padding: 20px; */
             display: flex;
-            min-height: 220px;
+            min-height: 260px;
             box-sizing: border-box;
             width: 450px;
             flex-direction: column;
@@ -403,11 +403,11 @@
             <form method="POST" enctype="multipart/form-data" action="/upload_audio_file">
                 <div class="form-group">
                     <center><input type="file" style="width: 70%; font-size: 18px;" name="fileupload" id="fileInput"
-                            multiple class="form-control" required accept=".wav" /></center>
+                            multiple class="form-control" required accept=".wav" /><p style="font-size: 13px; color: red; text-align: left; margin-top: 5px; margin-left: 75px;">Upload file size: 3MB</p></center>
                 </div>
                 <hr style="margin-top: 20px; margin-bottom: 20px;">
 
-                <div class="newbutton" style="padding: 0px 20px; text-align: right;">
+                <div class="newbutton" style="padding: 0px 20px; text-align: right; margin-bottom: 10px;">
                     <a type="button" class="btn btn-dark border-0" onclick="closePopupdata()">
                         Close
                     </a>

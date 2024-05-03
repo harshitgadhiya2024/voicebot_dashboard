@@ -23,6 +23,7 @@ from operations.mongo_connection import (mongo_connect, data_added, find_all_dat
 import json, requests
 import pandas as pd
 import audioread
+from pydub import AudioSegment
 
 secreat_id = uuid.uuid4().hex
 
@@ -69,11 +70,11 @@ def calling_happens(voice_file_id, numbers, max_retry, campaign_name,retry_wait_
     try:
         app.logger.debug("coming to call api")
         callback_url = "http://dailogwave.site/voice_callback"
-        cli_number = "8062364086"
+        # cli_number = "8062364086"
         if max_retry=="0" and retry_wait_time=="0":
-            url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&campaign_name={campaign_name}&callback_event={callback_url}&callback_url={callback_url}&cli_number={cli_number}"
+            url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&campaign_name={campaign_name}&callback_event={callback_url}&callback_url={callback_url}"
         else:
-            url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}&callback_event={callback_url}&callback_url={callback_url}&cli_number={cli_number}"
+            url = f"https://panelv2.cloudshope.com/api/voice_call?voice_file_id={voice_file_id}&numbers={numbers}&credit_type_id=23&max_retry={max_retry}&retry_after=1&campaign_name={campaign_name}&retry_wait_time={retry_wait_time}&callback_event={callback_url}&callback_url={callback_url}"
 
         payload = json.dumps({})
         headers = {
@@ -100,6 +101,15 @@ def get_audio_duration(file_path):
     with audioread.audio_open(file_path) as f:
         duration = f.duration
     return duration
+
+def get_file_size(file_path):
+    try:
+        size_in_bytes = os.path.getsize(file_path)
+        size_in_mb = size_in_bytes / (1024 * 1024)
+        return size_in_mb
+    except Exception as e:
+        app.logger.debug(f"error in get file size: {e}")
+        return "none"
 
 def upload_api(filepath, filename, exten):
     try:
@@ -509,6 +519,36 @@ def save_audio():
         flash("Please try again...", "danger")
         return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
 
+def audio_convert_date(username, audio_path):
+    try:
+        last_number = 1
+        try:
+            last_number = random.randint(10000000000, 99999999999)
+        except:
+            pass
+        
+        # Load the audio file
+        audio = AudioSegment.from_file(audio_path)
+
+        # Set parameters
+        bit_depth = 16
+        sample_rate = 8000
+        channels = 1  # Mono
+
+        # Apply parameter changes
+        audio = audio.set_frame_rate(sample_rate)
+        audio = audio.set_sample_width(bit_depth // 8)
+        audio = audio.set_channels(channels)
+        userfile_name = username+str(last_number)+".wav"
+        filename = app.config["voice_folder"]+userfile_name
+
+        # Export the modified audio
+        audio.export(filename, format="wav")
+        return filename
+
+    except Exception as e:
+        print(e)
+
 @app.route('/upload_audio_file', methods=['POST'])
 @token_required
 def upload_audio_file():
@@ -528,40 +568,15 @@ def upload_audio_file():
         app.config["userbase_recording"][username] = {}
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
-        print("audio save successfully")
-        download_file_path = f"http://dailogwave.site/download/{userfile_name}"
-        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
-        all_audio_list = []
-        for var in all_audio_data:
-            if var["file_status"] == "active":
-                del var["_id"]
-                all_audio_list.append(var)
-        
-        if len(all_audio_list)!=0:
-            data_status = "data"
-
-        res_upload,voice_id = upload_api(download_file_path, userfile_name, "wav")
-        print(res_upload, voice_id)
-        # res_upload = True
-        if res_upload:
-            get_duraction = get_audio_duration(filename)
-            get_duraction = int(get_duraction)
-            get_cre = int(get_duraction/28)
-            get_cre = get_cre+1
-            credits = get_cre*2
-            
-            register_dict = {
-                "user_id": login_dict["user_id"],
-                "audio_id": voice_id,
-                "audio_file": filename,
-                "duration": get_duraction,
-                "credits": credits,
-                "download_file_path": download_file_path,
-                "status": "active",
-                "file_status": "active"
-            }
-
-            data_added(app, db, "audio_store", register_dict)
+        print(filename)
+        filename = audio_convert_date(username, filename)
+        print(filename)
+        filesize = get_file_size(filename)
+        print(filesize)
+        if filesize<3:
+            print("coming in here")
+            print("audio save successfully")
+            download_file_path = f"http://dailogwave.site/download/{userfile_name}"
             all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
             all_audio_list = []
             for var in all_audio_data:
@@ -572,9 +587,43 @@ def upload_audio_file():
             if len(all_audio_list)!=0:
                 data_status = "data"
 
-            flash("Audio uploaded successfully", "success")
+            res_upload,voice_id = upload_api(download_file_path, userfile_name, "wav")
+            print(res_upload, voice_id)
+            # res_upload = True
+            if res_upload:
+                get_duraction = get_audio_duration(filename)
+                get_duraction = int(get_duraction)
+                get_cre = int(get_duraction/28)
+                get_cre = get_cre+1
+                credits = get_cre*2
+                
+                register_dict = {
+                    "user_id": login_dict["user_id"],
+                    "audio_id": voice_id,
+                    "audio_file": filename,
+                    "duration": get_duraction,
+                    "credits": credits,
+                    "download_file_path": download_file_path,
+                    "status": "active",
+                    "file_status": "active"
+                }
+
+                data_added(app, db, "audio_store", register_dict)
+                all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+                all_audio_list = []
+                for var in all_audio_data:
+                    if var["file_status"] == "active":
+                        del var["_id"]
+                        all_audio_list.append(var)
+                
+                if len(all_audio_list)!=0:
+                    data_status = "data"
+
+                flash("Audio uploaded successfully", "success")
+            else:
+                flash("Please try again...", "danger")
         else:
-            flash("Please try again...", "danger")
+            flash("File is grater than 3MB...", "danger")
 
         return render_template("audio_data.html", all_audio_list=all_audio_list,data_status=data_status,username=username)
 
