@@ -183,6 +183,11 @@
         ***********************************-->
         <div class="content-body default-height">
             <div class="container-fluid">
+                <div style="margin-bottom: 30px;">
+					<marquee style="padding: 0; margin: 0;">
+						<p style="color: red; padding: 13px 0 0px 0;">Please Note: Download report after your compaign is successfully completed...</p>
+					</marquee>
+				</div>
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card">
@@ -209,6 +214,7 @@
                                             <th>Compaign ID</th>
                                             <th>Compaign Name</th>
                                             <th>Total Calls</th>
+                                            <th>Processed Number</th>
                                             <th>Total Answered</th>
                                             <th>Total Busy</th>
                                             <th>Export Data</th>
@@ -217,11 +223,12 @@
                                     <tbody>
                                         {% for var in all_user_id_data %}
                                         <tr>
-                                            <td onclick='opencampaign("{{var["campaign_id"]}}")'>{{var["campaign_id"]}}</td>
-                                            <td onclick='opencampaign("{{var["campaign_id"]}}")'>{{var["campaign_name"]}}</td>
-                                            <td onclick='opencampaign("{{var["campaign_id"]}}")'>{{var["total_calls"]}}</td>
-                                            <td onclick='opencampaign("{{var["campaign_id"]}}")'>{{var["total_answered"]}}</td>
-                                            <td onclick='opencampaign("{{var["campaign_id"]}}")'>{{var["total_busy"]}}</td>
+                                            <td>{{var["campaign_id"]}}</td>
+                                            <td>{{var["campaign_name"]}}</td>
+                                            <td>{{var["total_calls"]}}</td>
+                                            <td>{{var["processed_number"]}}</td>
+                                            <td>{{var["total_answered"]}}</td>
+                                            <td>{{var["total_busy"]}}</td>
                                             <td>
                                                 <div class="basic-dropdown">
                                                     <div class="dropdown">

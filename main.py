@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timedelta
 from functools import wraps
 from PIL import Image
-import jwt
+import jwt, re
 from flask import (flash, Flask, redirect, render_template, request,
                    session, url_for, send_file, jsonify, send_from_directory)
 from flask_cors import CORS
@@ -45,12 +45,13 @@ app.config["userbase_recording"] = {}
 app.config['voice_folder'] = "static/uploaded_audio/"
 app.config["voice_details"] = {}
 app.config["EXPORT_UPLOAD_FOLDER"] = 'static/uploads/export_file/'
+app.config["user_token"] = {}
 
 # handling our application secure type like http or https
 secure_type = constant_data["secure_type"]
 
 # logger & MongoDB connection
-logger_con(app=app)
+# logger_con(app=app)
 client = mongo_connect(app=app)
 db = client["voicebot"]
 
@@ -144,6 +145,23 @@ def token_required(func):
             app.logger.debug("please first login in your app...")
             flash("Please login first...", "danger")
             return redirect(url_for('login', _external=True, _scheme=secure_type))
+        else:
+            url = "https://obdapi.ivrsms.com/api/obd/login"
+
+            payload = json.dumps({
+                "username": "snapgrid",
+                "password": "admin123"
+            })
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            response = requests.request("POST", url, headers=headers, data=payload)
+            response_data = json.loads(response.text)
+            session_api_userid = response_data.get("userid", "")
+            session_api_token = response_data.get("token", "")
+            user_id = login_dict.get("user_id", "")
+            app.config["user_token"][user_id] = {"session_userid": session_api_userid, "access_token": session_api_token}
+
         return func(*args, **kwargs)
     return decorated
 
@@ -168,6 +186,20 @@ def generate_token(username):
         app.logger.debug(f"error in generate token {e}")
 
 ############################ Login operations ##################################
+
+def get_live_campaign_logs(user_id, token):
+    try:
+        url = f"https://obdapi.ivrsms.com/api/obd/campaign/{user_id}"
+        payload = {}
+        headers = {
+            'Authorization': f'Bearer {token}'
+        }
+        response = requests.request("GET", url, headers=headers, data=payload)
+        response_data = json.loads(response.text)
+        return response_data
+
+    except Exception as e:
+        print(e)
 
 @app.route('/download/<filename>')
 def download_image_path(filename):
@@ -209,6 +241,19 @@ def login():
                         token = user_all_data["token"]
                         session["login_dict"] = {"username": username, "email": email, "user_id": user_id, "token": token}
                         app.logger.debug(f"Login Dict in session: {session.get('login_dict')}")
+                        url = "https://obdapi.ivrsms.com/api/obd/login"
+                        payload = json.dumps({
+                            "username": "snapgrid",
+                            "password": "admin123"
+                        })
+                        headers = {
+                            'Content-Type': 'application/json'
+                        }
+                        response = requests.request("POST", url, headers=headers, data=payload)
+                        response_data = json.loads(response.text)
+                        session_api_userid = response_data.get("userid", "")
+                        session_api_token = response_data.get("token", "")
+                        app.config["user_token"][user_id] = {"session_userid": session_api_userid, "access_token": session_api_token}
                         return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
                     else:
                         flash("Your account does not active. please wait for activation..", "danger")
@@ -226,6 +271,19 @@ def login():
                         token = user_email_data["token"]
                         session["login_dict"] = {"username": username, "email": email, "user_id": user_id, "token": token}
                         app.logger.debug(f"Login Dict in session: {session.get('login_dict')}")
+                        url = "https://obdapi.ivrsms.com/api/obd/login"
+                        payload = json.dumps({
+                            "username": "snapgrid",
+                            "password": "admin123"
+                        })
+                        headers = {
+                            'Content-Type': 'application/json'
+                        }
+                        response = requests.request("POST", url, headers=headers, data=payload)
+                        response_data = json.loads(response.text)
+                        session_api_userid = response_data.get("userid", "")
+                        session_api_token = response_data.get("token", "")
+                        app.config["user_token"][user_id] = {"session_userid": session_api_userid, "access_token": session_api_token}
                         return redirect(url_for("dashboard", _external=True, _scheme=secure_type))
                     else:
                         flash("Your account does not active. please wait for activation..", "danger")
@@ -519,41 +577,40 @@ def save_audio():
         flash("Please try again...", "danger")
         return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
 
-def audio_convert_date(username, audio_path):
-    try:
-        last_number = 1
-        try:
-            last_number = random.randint(10000000000, 99999999999)
-        except:
-            pass
+# def audio_convert_date(username, audio_path):
+#     try:
+#         last_number = 1
+#         try:
+#             last_number = random.randint(10000000000, 99999999999)
+#         except:
+#             pass
         
-        # Load the audio file
-        audio = AudioSegment.from_file(audio_path)
+#         # Load the audio file
+#         audio = AudioSegment.from_file(audio_path)
 
-        # Set parameters
-        bit_depth = 16
-        sample_rate = 8000
-        channels = 1  # Mono
+#         # Set parameters
+#         bit_depth = 16
+#         sample_rate = 8000
+#         channels = 1  # Mono
 
-        # Apply parameter changes
-        audio = audio.set_frame_rate(sample_rate)
-        audio = audio.set_sample_width(bit_depth // 8)
-        audio = audio.set_channels(channels)
-        userfile_name = username+str(last_number)+".wav"
-        filename = app.config["voice_folder"]+userfile_name
+#         # Apply parameter changes
+#         audio = audio.set_frame_rate(sample_rate)
+#         audio = audio.set_sample_width(bit_depth // 8)
+#         audio = audio.set_channels(channels)
+#         userfile_name = username+str(last_number)+".wav"
+#         filename = app.config["voice_folder"]+userfile_name
 
-        # Export the modified audio
-        audio.export(filename, format="wav")
-        return filename
+#         # Export the modified audio
+#         audio.export(filename, format="wav")
+#         return filename
 
-    except Exception as e:
-        print(e)
+#     except Exception as e:
+#         print(e)
 
 @app.route('/upload_audio_file', methods=['POST'])
 @token_required
 def upload_audio_file():
     try:
-        data_status = "no_data"
         login_dict = session.get("login_dict", {})
         username = login_dict["username"]
         last_number = 1
@@ -569,67 +626,89 @@ def upload_audio_file():
         app.config["userbase_recording"][username]["last_number"] = last_number+1
         audio_file.save(filename)
         print(filename)
-        filename = audio_convert_date(username, filename)
-        print(filename)
-        filesize = get_file_size(filename)
-        print(filesize)
-        if filesize<3:
-            print("coming in here")
-            print("audio save successfully")
-            download_file_path = f"http://dailogwave.site/download/{userfile_name}"
-            all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
-            all_audio_list = []
-            for var in all_audio_data:
-                if var["file_status"] == "active":
-                    del var["_id"]
-                    all_audio_list.append(var)
+        # filesize = get_file_size(filename)
+        # print(filesize)
+        # if filesize<3:
+        print("coming in here")
+        print("audio save successfully")
+        download_file_path = f"http://dailogwave.site/download/{userfile_name}"
+        api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
+        api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
+        response_status, promptId, message = upload_audio_api_file(api_user_id, api_token, userfile_name, filename)
+        if response_status:
+            get_duraction = get_audio_duration(filename)
+            get_duraction = int(get_duraction)
+            get_cre = int(get_duraction/28)
+            get_cre = get_cre+1
+            credits = get_cre*2
             
-            if len(all_audio_list)!=0:
-                data_status = "data"
+            register_dict = {
+                "user_id": login_dict["user_id"],
+                "audio_id": int(promptId),
+                "audio_file_name": userfile_name,
+                "audio_file_path": filename,
+                "duration": get_duraction,
+                "credits": credits,
+                "download_file_path": download_file_path,
+                "status": "inactive",
+                "file_status": "active"
+            }
 
-            res_upload,voice_id = upload_api(download_file_path, userfile_name, "wav")
-            print(res_upload, voice_id)
-            # res_upload = True
-            if res_upload:
-                get_duraction = get_audio_duration(filename)
-                get_duraction = int(get_duraction)
-                get_cre = int(get_duraction/28)
-                get_cre = get_cre+1
-                credits = get_cre*2
-                
-                register_dict = {
-                    "user_id": login_dict["user_id"],
-                    "audio_id": voice_id,
-                    "audio_file": filename,
-                    "duration": get_duraction,
-                    "credits": credits,
-                    "download_file_path": download_file_path,
-                    "status": "active",
-                    "file_status": "active"
-                }
-
-                data_added(app, db, "audio_store", register_dict)
-                all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
-                all_audio_list = []
-                for var in all_audio_data:
-                    if var["file_status"] == "active":
-                        del var["_id"]
-                        all_audio_list.append(var)
-                
-                if len(all_audio_list)!=0:
-                    data_status = "data"
-
-                flash("Audio uploaded successfully", "success")
-            else:
-                flash("Please try again...", "danger")
+            data_added(app, db, "audio_store", register_dict)
+            flash(message, "success")
+            return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
         else:
-            flash("File is grater than 3MB...", "danger")
-
-        return render_template("audio_data.html", all_audio_list=all_audio_list,data_status=data_status,username=username)
+            flash(message, "danger")
+            return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
 
     except Exception as e:
         app.logger.debug(f"error in save audio route {e}")
         return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
+
+def upload_audio_api_file(user_id, token, filename, filepath):
+    try:
+        url = "https://obdapi.ivrsms.com/api/obd/promptupload"
+        filename_without = filename.split(".")[0]
+        filename_without = remove_special_characters(filename_without)
+        payload = {'userId': str(user_id),
+        'fileName': filename_without,
+        'promptCategory': 'welcome'}
+        files=[
+        ('waveFile',(filename,open(filepath,'rb'),'audio/wav'))
+        ]
+        headers = {
+        'Authorization': f'Bearer {token}'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload, files=files)
+
+        response_data = json.loads(response.text)
+        promptId = response_data.get("promptId", "nothing")
+        message = response_data.get("message", "nothing")
+        if promptId=="nothing":
+            return False, "nothing",message
+        else:
+            return True, promptId,message
+        
+    except Exception as e:
+        print(e)
+
+def get_all_audio_file(user_id, token):
+    try:
+        url = f"https://obdapi.ivrsms.com/api/obd/prompts/{user_id}"
+
+        payload = {}
+        headers = {
+        'Authorization': f'Bearer {token}'
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        response_data = json.loads(response.text)
+        return response_data
+        
+    except Exception as e:
+        print(e)
 
 @app.route('/upload_audio', methods=['GET', 'POST'])
 @token_required
@@ -656,6 +735,91 @@ def upload_audio():
         app.logger.debug(f"error in upload audio route {e}")
         return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
     
+def bulk_calling_with_api(user_id, token, campaignname, baseid, audioid, max_retry):
+    try:
+        url = "https://obdapi.ivrsms.com/api/obd/campaign/compose"
+        # Get current date and time
+        current_datetime = datetime.now()
+
+        # Format the date and time as per your requirement
+        formatted_datetime = current_datetime.strftime("%Y-%m-%d %H:%M:%S")
+
+        payload = json.dumps({
+        "userId": str(user_id),
+        "campaignName": str(campaignname),
+        "templateId": "0",
+        "dtmf": "",
+        "baseId": str(baseid),
+        "welcomePId": str(audioid),
+        "menuPId": "",
+        "noInputPId": "",
+        "wrongInputPId": "",
+        "thanksPId": "",
+        "scheduleTime": formatted_datetime,
+        "smsSuccessApi": "",
+        "smsFailApi": "",
+        "smsDtmfApi": "",
+        "callDurationSMS": 0,
+        "retries": max_retry,
+        "retryInterval": 900,
+        "agentRows": "\"\"",
+        "channels": "20",
+        "menuWaitTime": "",
+        "rePrompt": ""
+        })
+        headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+
+        response_data = json.loads(response.text)
+        
+        campaignId = response_data.get("campaignId", "nothing")
+        message = response_data.get("message", "nothing")
+        if campaignId=="nothing":
+            return False, campaignId, message
+        else:
+            return True, campaignId, message
+
+    except Exception as e:
+        print(e)
+        return False, campaignId, message
+
+def remove_special_characters(text):
+    # Remove special characters and spaces
+    cleaned_text = re.sub(r'[^a-zA-Z0-9]', '', text)
+    return cleaned_text
+
+def get_baseid(user_id, filename, filepath, token):
+    try:
+        url = "https://obdapi.ivrsms.com/api/obd/baseupload"
+        base_filename = filename.split(".")[0]
+        base_filename = remove_special_characters(base_filename)
+        payload = {'userId': int(user_id),
+        'baseName': base_filename,
+        'contactList': ''}
+        files=[
+            ('baseFile',(filename,open(os.path.abspath(filepath),'rb'),'text/csv'))
+        ]
+        headers = {
+        'Authorization': f'Bearer {token}'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload, files=files)
+
+        response_data = json.loads(response.text)
+        baseid = response_data.get("baseId", "nothing")
+        message = response_data.get("message", "nothing")
+        if baseid=="nothing":
+            return False, baseid, message
+        else:
+            return True, baseid, message
+        
+    except Exception as e:
+        print(e)
+        return False, baseid, message
+    
 @app.route('/bulk_calling', methods=['GET', 'POST'])
 @token_required
 def bulk_calling():
@@ -673,10 +837,8 @@ def bulk_calling():
             voiceid = request.form["voiceid"]
             numberfile = request.files['numberfile']
             max_retry = request.form.get("max_retry", "0")
-            retry_time = request.form.get("retry_time", "0")
             app.logger.debug(f"all data fetched and voiceid is {voiceid}")
             app.logger.debug(f"all data fetched and voiceid is {max_retry}")
-            app.logger.debug(f"all data fetched and voiceid is {retry_time}")
 
             audio_user_data = find_spec_data(app, db, "audio_store", {"audio_id": int(voiceid)})
             audio_user_data = list(audio_user_data)
@@ -688,64 +850,44 @@ def bulk_calling():
             numberfile.save(filepath)
             app.logger.debug("file save successfully")
             exten = file_name.split(".")[-1]
-            if exten=="csv":
-                df = pd.read_csv(filepath)
-            else:
-                df = pd.read_excel(filepath)
-            
-            all_numbers = list(df["number"])
-            user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
-            user_points = list(user_points)
-            points = user_points[0]["points"]
-            if len(all_numbers)>points:
-                flash("Please recharge your account, don't enough points you have...", "warning")
-            else:
-                all_numbers_string = f"{all_numbers[0]}"
-                for var in all_numbers[1:]:
-                    all_numbers_string+=f",{var}"
-
-                flag_mapping,campaign_id  = calling_happens(voiceid, all_numbers_string, max_retry, campaign_name, retry_time)
-                app.logger.debug("completed")
-                if flag_mapping:
-                    register_dict_calling = {
-                        "user_id": user_id,
-                        "campaign_id": str(campaign_id),
-                        "campaign_name": campaign_name,
-                        "total_calls": len(all_numbers),
-                        "total_answered": 0,
-                        "total_busy": 0,
-                        "timestamp": get_timestamp(app)
-                    }
-                    data_added(app, db, "campaign_details", register_dict_calling)
-
-                    for number_call in all_numbers:
-                        new_mapping_dict = {
-                            "user_id": user_id,
-                            "campaign_id": str(campaign_id),
-                            "campaign_name": campaign_name,
-                            "number_id": "-",
-                            "number": str(number_call),
-                            "answer_time": "-",
-                            "status": "-",
-                            "extension": "-",
-                            "timestamp": get_timestamp(app)
-                        }
-                        data_added(app, db, "user_campaign_details", new_mapping_dict)
-
-                    all_points_data = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
-                    all_points_data = list(all_points_data)
-                    campaigns_total = all_points_data[0]["campaigns"]
-                    totalcalls = all_points_data[0]["calls"]
-
-                    points_data_mapping = {"campaign_id": str(campaign_id), "points_min": points_min}
-                    data_added(app, db, "data_points_mapping", points_data_mapping)
-
-                    update_mongo_data(app, db, "points_mapping", {"user_id": user_id}, {"campaigns": int(campaigns_total)+1, "calls": int(totalcalls)+len(all_numbers)})
-
-                    flash("Calling start successfully...", "success")
+            api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
+            api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
+            status, baseid, message = get_baseid(api_user_id, file_name, filepath, api_token) 
+            if status: 
+                if exten=="csv":
+                    df = pd.read_csv(filepath)
                 else:
-                    flash("Voice call Schedulled Time between 7AM to 7PM")
-            return render_template("calling_system.html", all_audio_ids=all_audio_ids, username=username)
+                    df = pd.read_excel(filepath)
+                
+                all_numbers = list(df["number"])
+                user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+                user_points = list(user_points)
+                points = user_points[0]["points"]
+                required_points = len(all_numbers)*int(points_min)
+                if required_points>points:
+                    flash("Please recharge your account, don't enough points you have...", "warning")
+                else:
+                    status_api, campaignId, message = bulk_calling_with_api(api_user_id, api_token, campaign_name, baseid, voiceid, max_retry)
+                    app.logger.debug("completed")
+                    if status_api:
+                        all_points_data = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+                        all_points_data = list(all_points_data)
+                        campaigns_total = all_points_data[0]["campaigns"]
+                        totalcalls = all_points_data[0]["calls"]
+
+                        points_data_mapping = {"user_id": user_id, "campaign_id": str(campaignId), "points_min": points_min, "points_cut": False}
+                        data_added(app, db, "data_points_mapping", points_data_mapping)
+
+                        update_mongo_data(app, db, "points_mapping", {"user_id": user_id}, {"campaigns": int(campaigns_total)+1, "calls": int(totalcalls)+len(all_numbers)})
+
+                        flash(message, "success")
+                        return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
+                    else:
+                        flash(message, "danger")
+                        return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
+            else:
+                flash(message, "danger")
+                return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
         else:
             return render_template("calling_system.html", all_audio_ids=all_audio_ids, username=username)
         
@@ -847,7 +989,7 @@ def deletedata():
         type = request.args.get("type")
         if type=="audio":
             audio_path = request.args.get("audio_path")
-            condition_dict = {"user_id": user_id, "audio_file": audio_path}
+            condition_dict = {"user_id": user_id, "audio_file_path": audio_path}
             update_mongo_data(app, db, "audio_store", condition_dict, {"file_status": "inactive"})
             flash("Delete data successfully...", "success")
             return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
@@ -864,8 +1006,41 @@ def campaign_details():
         login_dict = session.get("login_dict", {})
         username = login_dict.get("username", "")
         user_id = login_dict.get("user_id", "")
-        all_user_id_data = find_spec_data(app, db, "campaign_details", {"user_id": user_id})
-        all_user_id_data = list(all_user_id_data)
+        api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
+        api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
+        all_compaign_data = get_live_campaign_logs(api_user_id, api_token)
+        coll = db["data_points_mapping"]
+        all_user_based_data = coll.find({"user_id": user_id})
+        # all_campaign_ids = [var["campaign_id"] for var in all_user_based_data]
+        all_campaign_ids = []
+        all_campaign_ids_dict = {}
+        for var in all_user_based_data:
+            all_campaign_ids.append(var["campaign_id"])
+            all_campaign_ids_dict[var["campaign_id"]] = var
+        all_user_id_data = []
+        for datavar in all_compaign_data:
+            campaignId = datavar.get("campaignId", "nothing")
+            if str(campaignId) in all_campaign_ids:
+                mapping_dict = {
+                    "campaign_id": datavar["campaignId"],
+                    "campaign_name": datavar["campaignName"],
+                    "total_calls": datavar["numbersUploaded"],
+                    "processed_number": datavar["numbersProcessed"],
+                    "total_answered": datavar["numbersProcessed"],
+                    "total_busy": int(datavar["numbersUploaded"]) - int(datavar["numbersProcessed"])
+                }
+                all_user_id_data.append(mapping_dict)
+                data_check = find_spec_data(app, db, "points_mapping", {"user_id": int(user_id)})
+                data_check = list(data_check)
+                points = data_check[0]["points"]
+                if not all_campaign_ids_dict[str(campaignId)]["points_cut"]:
+                    if int(datavar["numbersUploaded"])==int(datavar["numbersProcessed"]):
+                        answered_calls = int(datavar["numbersProcessed"])
+                        points_min = all_campaign_ids_dict[str(campaignId)]["points_min"]
+                        cut_point = answered_calls*int(points_min)
+                        update_mongo_data(app, db, "points_mapping", {"user_id": user_id}, {"points": int(points)-int(cut_point)})
+                        update_mongo_data(app, db, "data_points_mapping", {"user_id": int(user_id), "campaign_id": str(campaignId)}, {"points_cut": True})
+
         all_user_id_data = all_user_id_data[::-1]
         return render_template("campaign_details.html", username=username,all_user_id_data=all_user_id_data)
 
@@ -918,7 +1093,6 @@ def export_panel_data(app, database_data, panel, type):
 
     except Exception as e:
         app.logger.debug(f"Error in export data from database: {e}")
-
     
 @app.route('/export_data', methods=['GET', 'POST'])
 @token_required
@@ -987,4 +1161,4 @@ def user_update_password():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80)
+    app.run(host="0.0.0.0", port=80, debug=True)

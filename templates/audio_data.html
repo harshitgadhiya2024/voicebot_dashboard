@@ -344,7 +344,7 @@
                                             <td><strong>{{var["audio_id"]}}</strong></td>
                                             <td>
                                                 <audio controls>
-                                                    <source src='{{var["audio_file"]}}' type="audio/mpeg">
+                                                    <source src='{{var["audio_file_path"]}}' type="audio/mpeg">
                                                     Your browser does not support the audio element.
                                                 </audio>
                                             </td>
@@ -355,7 +355,7 @@
                                                 {{var["credits"]}}
                                             </td>
                                             <td>
-                                                {% if var["status"] == "pending" %}
+                                                {% if var["status"] == "inactive" %}
                                                 <div class="d-flex align-items-center"><i
                                                         class="fa fa-circle text-danger me-1"></i> {{var["status"]}}
                                                 </div>
@@ -367,7 +367,7 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex">
-                                                    <a href='/deletedata?type=audio&audio_path={{var["audio_file"]}}'
+                                                    <a href='/deletedata?type=audio&audio_path={{var["audio_file_path"]}}'
                                                         class="btn btn-danger shadow btn-xs sharp"><i
                                                             class="fa fa-trash"></i></a>
                                                 </div>
