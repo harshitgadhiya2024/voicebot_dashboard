@@ -51,7 +51,7 @@ app.config["user_token"] = {}
 secure_type = constant_data["secure_type"]
 
 # logger & MongoDB connection
-# logger_con(app=app)
+logger_con(app=app)
 client = mongo_connect(app=app)
 db = client["voicebot"]
 
