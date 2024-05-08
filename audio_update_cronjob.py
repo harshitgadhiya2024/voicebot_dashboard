@@ -24,11 +24,24 @@ def get_all_audio_file(user_id, token):
 
 api_user_id = "snapgrid"
 api_password = "admin123"
-all_response_data = get_all_audio_file(api_user_id, api_password)
+
+url = "https://obdapi.ivrsms.com/api/obd/login"
+payload = json.dumps({
+    "username": "snapgrid",
+    "password": "admin123"
+})
+headers = {
+    'Content-Type': 'application/json'
+}
+response = requests.request("POST", url, headers=headers, data=payload)
+response_data = json.loads(response.text)
+session_api_userid = response_data.get("userid", "")
+session_api_token = response_data.get("token", "")
+
+all_response_data = get_all_audio_file(session_api_userid, session_api_token)
 main_dict = {}
 for var in all_response_data:
     main_dict[var["fileName"]] = var
-
 
 def main_process(user_id):
     try:
