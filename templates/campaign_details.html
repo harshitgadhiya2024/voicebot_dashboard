@@ -23,28 +23,32 @@
     <link href="static/assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet">
     <link class="main-css" href="static/assets/css/style.css" rel="stylesheet">
     <style>
-		@media screen and (max-width:1024px) {
-			.brand-logo{
-				padding: 10px 20px !important;
-			}
-			.brand-logo img{
-				height: 60px !important;
-				margin-top: 50px !important;
-			}
-		}
-		@media screen and (max-width:768px) {
-			.brand-logo{
-				padding: 10px 20px !important;
-			}
-			.brand-logo img{
-				height: 50px !important;
-				margin-top: 0px !important;
-			}
-			.activedata {
-				color: #fff !important;
-			}
-		}
-	</style>
+        @media screen and (max-width:1024px) {
+            .brand-logo {
+                padding: 10px 20px !important;
+            }
+
+            .brand-logo img {
+                height: 60px !important;
+                margin-top: 50px !important;
+            }
+        }
+
+        @media screen and (max-width:768px) {
+            .brand-logo {
+                padding: 10px 20px !important;
+            }
+
+            .brand-logo img {
+                height: 50px !important;
+                margin-top: 0px !important;
+            }
+
+            .activedata {
+                color: #fff !important;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -161,6 +165,11 @@
                             <span class="nav-text activedata" style="color: #1EAAE7;">Campaign Details</span>
                         </a>
                     </li>
+                    <li><a class="ai-icon" href="/live_campaign_details">
+                            <i class="fas fa-stream"></i>
+                            <span class="nav-text">Live Campaign</span>
+                        </a>
+                    </li>
                     <li><a class="ai-icon" href="/bulk_calling">
                             <i class="fas fa-phone"></i>
                             <span class="nav-text">Bulk Auto Call</span>
@@ -184,10 +193,11 @@
         <div class="content-body default-height">
             <div class="container-fluid">
                 <div style="margin-bottom: 30px;">
-					<marquee style="padding: 0; margin: 0;">
-						<p style="color: red; padding: 13px 0 0px 0;">Please Note: Download report after your compaign is successfully completed...</p>
-					</marquee>
-				</div>
+                    <marquee style="padding: 0; margin: 0;">
+                        <p style="color: red; padding: 13px 0 0px 0;">Please Note: Download report after your compaign
+                            is successfully completed...</p>
+                    </marquee>
+                </div>
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card">

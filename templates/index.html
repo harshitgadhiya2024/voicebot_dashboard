@@ -28,22 +28,26 @@
 
 	<style>
 		@media screen and (max-width:1024px) {
-			.brand-logo{
+			.brand-logo {
 				padding: 10px 20px !important;
 			}
-			.brand-logo img{
+
+			.brand-logo img {
 				height: 60px !important;
 				margin-top: 50px !important;
 			}
 		}
+
 		@media screen and (max-width:768px) {
-			.brand-logo{
+			.brand-logo {
 				padding: 10px 20px !important;
 			}
-			.brand-logo img{
+
+			.brand-logo img {
 				height: 50px !important;
 				margin-top: 0px !important;
 			}
+
 			.activedata {
 				color: #fff !important;
 			}
@@ -119,7 +123,9 @@
 									{% if company_logo %}
 									<img src="{{company_logo}}" width="20" alt="">
 									{% else %}
-									<p style="padding: 10px 20px; background-color: #2BC155; border-radius: 50%; margin: 10px 0px; color: #fff; font-weight: 600; ">{{username[0].title()}}</p>
+									<p
+										style="padding: 10px 20px; background-color: #2BC155; border-radius: 50%; margin: 10px 0px; color: #fff; font-weight: 600; ">
+										{{username[0].title()}}</p>
 									{% endif %}
 								</a>
 								<div class="dropdown-menu dropdown-menu-end">
@@ -134,9 +140,9 @@
 										<span class="ms-2">Logout </span>
 									</a>
 									<a href="/user_update_password" class="dropdown-item ai-icon">
-                                        <i class="fas fa-edit" style="color: red;"></i>
-                                        <span class="ms-2">Update Password </span>
-                                    </a>
+										<i class="fas fa-edit" style="color: red;"></i>
+										<span class="ms-2">Update Password </span>
+									</a>
 								</div>
 							</li>
 						</ul>
@@ -163,6 +169,11 @@
 					<li><a class="ai-icon" href="/campaign_details">
 							<i class="fas fa-tasks"></i>
 							<span class="nav-text">Campaign Details</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/live_campaign_details">
+							<i class="fas fa-stream"></i>
+							<span class="nav-text">Live Campaign</span>
 						</a>
 					</li>
 					<li><a class="ai-icon" href="/bulk_calling">
@@ -221,16 +232,19 @@
 														<div class="bg-primary rounded text-center p-3">
 															<div
 																class="d-inline-block position-relative donut-chart-sale mb-3">
-																	<span class="fs-24 text-white font-w600">{{campaigns}}</span>
+																<span
+																	class="fs-24 text-white font-w600">{{campaigns}}</span>
 															</div>
-															<span class="fs-14 text-white d-block">Total Campaigns</span>
+															<span class="fs-14 text-white d-block">Total
+																Campaigns</span>
 														</div>
 													</div>
 													<div class="col-sm-4">
 														<div class="bg-success rounded text-center p-3">
 															<div
 																class="d-inline-block position-relative donut-chart-sale mb-3">
-																<span class="fs-24 text-white font-w600">{{calls}}</span>
+																<span
+																	class="fs-24 text-white font-w600">{{calls}}</span>
 															</div>
 															<span class="fs-14 text-white d-block">Total Calls</span>
 														</div>
@@ -239,9 +253,11 @@
 														<div class="bg-danger rounded text-center p-3">
 															<div
 																class="d-inline-block position-relative donut-chart-sale mb-3">
-																<span class="fs-24 text-white font-w600">{{points}}</span>
+																<span
+																	class="fs-24 text-white font-w600">{{points}}</span>
 															</div>
-															<span class="fs-14 text-white d-block">Remaining Credits</span>
+															<span class="fs-14 text-white d-block">Remaining
+																Credits</span>
 														</div>
 													</div>
 												</div>
@@ -347,4 +363,5 @@
 		});
 	</script>
 </body>
+
 </html>

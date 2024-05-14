@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 
-
-<!-- Mirrored from mophy.dexignzone.com/xhtml/table-bootstrap-basic.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 25 Apr 2024 07:17:24 GMT -->
-
 <head>
     <!--Title-->
-    <title>Dailogwave - Campaign Details</title>
+    <title>Dailogwave - All Campaign</title>
 
     <!-- Meta -->
     <meta charset="utf-8">
@@ -164,13 +161,13 @@
                         </a>
                     </li>
                     <li><a class="ai-icon" href="/campaign_details">
-                            <i class="fas fa-tasks" style="background-color: #1EAAE7; color: #fff;"></i>
-                            <span class="nav-text activedata" style="color: #1EAAE7;">Campaign Details</span>
+                            <i class="fas fa-tasks"></i>
+                            <span class="nav-text">Campaign Details</span>
                         </a>
                     </li>
                     <li><a class="ai-icon" href="/live_campaign_details">
-                            <i class="fas fa-stream"></i>
-                            <span class="nav-text">Live Campaign</span>
+                            <i class="fas fa-stream" style="background-color: #1EAAE7; color: #fff;"></i>
+                            <span class="nav-text activedata" style="color: #1EAAE7;">Live Campaign</span>
                         </a>
                     </li>
                     <li><a class="ai-icon" href="/bulk_calling">
@@ -195,11 +192,17 @@
         ***********************************-->
         <div class="content-body default-height">
             <div class="container-fluid">
+                <div style="margin-bottom: 30px;">
+                    <marquee style="padding: 0; margin: 0;">
+                        <p style="color: red; padding: 13px 0 0px 0;">Please Note: Download report after your compaign
+                            is successfully completed...</p>
+                    </marquee>
+                </div>
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title">Compaign Details</h4>
+                                <h4 class="card-title">All Compaign</h4>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -219,24 +222,37 @@
                                     <thead>
                                         <tr>
                                             <th>Compaign ID</th>
-                                            <th>Number ID</th>
                                             <th>Compaign Name</th>
-                                            <th>Number</th>
-                                            <th>Answer Time</th>
-                                            <th>Status</th>
-                                            <th>Extension</th>
+                                            <th>Total Calls</th>
+                                            <th>Processed Number</th>
+                                            <th>Total Answered</th>
+                                            <th>Total Busy</th>
+                                            <!-- <th>Export Data</th> -->
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for var in all_campaign_data %}
+                                        {% for var in all_user_id_data %}
                                         <tr>
                                             <td>{{var["campaign_id"]}}</td>
-                                            <td>{{var["number_id"]}}</td>
                                             <td>{{var["campaign_name"]}}</td>
-                                            <td>{{var["number"]}}</td>
-                                            <td>{{var["answer_time"]}}</td>
-                                            <td>{{var["status"]}}</td>
-                                            <td>{{var["extension"]}}</td>
+                                            <td>{{var["total_calls"]}}</td>
+                                            <td>{{var["processed_number"]}}</td>
+                                            <td>{{var["total_answered"]}}</td>
+                                            <td>{{var["total_busy"]}}</td>
+                                            <!-- <td>
+                                                <div class="basic-dropdown">
+                                                    <div class="dropdown">
+                                                        <button type="button" class="btn btn-primary dropdown-toggle"
+                                                            data-bs-toggle="dropdown">
+                                                            Export Data
+                                                        </button>
+                                                        <div class="dropdown-menu">
+                                                            <a class="dropdown-item" style="cursor: pointer;" href="/export_data?type=csv&campaign_id={{var['campaign_id']}}">Csv</a>
+                                                            <a class="dropdown-item" style="cursor: pointer;" href="/export_data?type=excel&campaign_id={{var['campaign_id']}}">Excel</a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td> -->
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -276,6 +292,18 @@
     <script src="static/assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
     <script src="static/assets/js/custom.min.js"></script>
     <script src="static/assets/js/demo.js"></script>
+    <!-- <script src="static/assets/js/styleSwitcher.js"></script> -->
+    <script>
+        function opencampaign(campaign_iddata) {
+            console.log("compaign_id is ", campaign_iddata);
+            window.location.href = `/campaign_info?campaign_id=${campaign_iddata}`
+        }
+        function exportdataplan(type, campaign_id) {
+            console.log(type, campaign_id);
+        }
+    </script>
 </body>
+
+<!-- Mirrored from mophy.dexignzone.com/xhtml/table-bootstrap-basic.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 25 Apr 2024 07:17:24 GMT -->
 
 </html>

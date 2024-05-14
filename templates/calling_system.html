@@ -20,22 +20,26 @@
 	<link class="main-css" href="static/assets/css/style.css" rel="stylesheet">
 	<style>
 		@media screen and (max-width:1024px) {
-			.brand-logo{
+			.brand-logo {
 				padding: 10px 20px !important;
 			}
-			.brand-logo img{
+
+			.brand-logo img {
 				height: 60px !important;
 				margin-top: 50px !important;
 			}
 		}
+
 		@media screen and (max-width:768px) {
-			.brand-logo{
+			.brand-logo {
 				padding: 10px 20px !important;
 			}
-			.brand-logo img{
+
+			.brand-logo img {
 				height: 50px !important;
 				margin-top: 0px !important;
 			}
+
 			.activedata {
 				color: #fff !important;
 			}
@@ -129,9 +133,9 @@
 										<span class="ms-2">Logout </span>
 									</a>
 									<a href="/user_update_password" class="dropdown-item ai-icon">
-                                        <i class="fas fa-edit" style="color: red;"></i>
-                                        <span class="ms-2">Update Password </span>
-                                    </a>
+										<i class="fas fa-edit" style="color: red;"></i>
+										<span class="ms-2">Update Password </span>
+									</a>
 								</div>
 							</li>
 						</ul>
@@ -157,6 +161,11 @@
 					<li><a class="ai-icon" href="/campaign_details">
 							<i class="fas fa-tasks"></i>
 							<span class="nav-text">Campaign Details</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/live_campaign_details">
+							<i class="fas fa-stream"></i>
+							<span class="nav-text">Live Campaign</span>
 						</a>
 					</li>
 					<li><a class="ai-icon" href="/bulk_calling">
@@ -198,7 +207,8 @@
 									<div class="col-md-auto" id="remove_tag" style="margin: 10px">
 										{% with messages = get_flashed_messages(with_categories=true)
 										%} {% if messages %} {% for category, message in messages %}
-										<div class="alert alert-{{category}} alert-dismissable" role="alert" id="inside_alert">
+										<div class="alert alert-{{category}} alert-dismissable" role="alert"
+											id="inside_alert">
 											{{message}}
 										</div>
 										{% endfor %} {% endif %} {% endwith %}

@@ -1068,7 +1068,58 @@ def campaign_details():
     except Exception as e:
         app.logger.debug(f"error in campaign_details route: {e}")
         return redirect(url_for('campaign_details', _external=True, _scheme=secure_type))
-  
+
+
+@app.route('/live_campaign_details', methods=['GET', 'POST'])
+@token_required
+def live_campaign_details():
+    try:
+        login_dict = session.get("login_dict", {})
+        username = login_dict.get("username", "")
+        user_id = login_dict.get("user_id", "")
+        api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
+        api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
+        all_compaign_data = get_live_campaign_logs(api_user_id, api_token)
+        coll = db["data_points_mapping"]
+        all_user_based_data = coll.find({"user_id": user_id})
+        # all_campaign_ids = [var["campaign_id"] for var in all_user_based_data]
+        all_campaign_ids = []
+        all_campaign_ids_dict = {}
+        for var in all_user_based_data:
+            all_campaign_ids.append(var["campaign_id"])
+            all_campaign_ids_dict[var["campaign_id"]] = var
+        all_user_id_data = []
+        for datavar in all_compaign_data:
+            campaignId = datavar.get("campaignId", "nothing")
+            if str(campaignId) in all_campaign_ids:
+                mapping_dict = {
+                    "campaign_id": datavar["campaignId"],
+                    "campaign_name": datavar["campaignName"],
+                    "total_calls": datavar["numbersUploaded"],
+                    "processed_number": datavar["numbersProcessed"],
+                    "total_answered": datavar["numbersProcessed"],
+                    "total_busy": int(datavar["numbersUploaded"]) - int(datavar["numbersProcessed"])
+                }
+                all_user_id_data.append(mapping_dict)
+                data_check = find_spec_data(app, db, "points_mapping", {"user_id": int(user_id)})
+                data_check = list(data_check)
+                points = data_check[0]["points"]
+                if not all_campaign_ids_dict[str(campaignId)]["points_cut"]:
+                    if int(datavar["numbersUploaded"])==int(datavar["numbersProcessed"]):
+                        answered_calls = int(datavar["numbersProcessed"])
+                        points_min = all_campaign_ids_dict[str(campaignId)]["points_min"]
+                        cut_point = answered_calls*int(points_min)
+                        update_mongo_data(app, db, "points_mapping", {"user_id": user_id}, {"points": int(points)-int(cut_point)})
+                        update_mongo_data(app, db, "data_points_mapping", {"user_id": int(user_id), "campaign_id": str(campaignId)}, {"points_cut": True})
+
+        all_user_id_data = all_user_id_data[::-1]
+        return render_template("live_campaign_details.html", username=username,all_user_id_data=all_user_id_data)
+
+    except Exception as e:
+        app.logger.debug(f"error in campaign_details route: {e}")
+        return redirect(url_for('live_campaign_details', _external=True, _scheme=secure_type))
+
+ 
 @app.route('/campaign_info', methods=['GET', 'POST'])
 @token_required
 def campaign_info():
@@ -1181,4 +1232,4 @@ def user_update_password():
         return redirect(url_for('user_update_password', _external=True, _scheme=secure_type))
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80, debug=True)
+    app.run(host="0.0.0.0", port=80)

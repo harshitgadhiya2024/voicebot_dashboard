@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <!--Title-->
     <title>Dailogwave - Audio Upload</title>
@@ -115,42 +116,47 @@
             font-size: 18px;
         }
 
-		@media screen and (max-width:1024px) {
-			.brand-logo{
-				padding: 10px 20px !important;
-			}
-			.brand-logo img{
-				height: 60px !important;
-				margin-top: 50px !important;
-			}
-		}
-		@media screen and (max-width:768px) {
-			.brand-logo{
-				padding: 10px 20px !important;
-			}
-			.brand-logo img{
-				height: 50px !important;
-				margin-top: 0px !important;
-			}
+        @media screen and (max-width:1024px) {
+            .brand-logo {
+                padding: 10px 20px !important;
+            }
+
+            .brand-logo img {
+                height: 60px !important;
+                margin-top: 50px !important;
+            }
+        }
+
+        @media screen and (max-width:768px) {
+            .brand-logo {
+                padding: 10px 20px !important;
+            }
+
+            .brand-logo img {
+                height: 50px !important;
+                margin-top: 0px !important;
+            }
+
             .activedata {
-				color: #fff !important;
-			}
-		}
+                color: #fff !important;
+            }
+        }
 
 
 
-    @media only screen and (max-width: 450px) {
-      .popupdata {
-        height: 200px;
-        width: 350px;
-        /* font-size: 14px; */
-      }
-      .popuptype {
-        height: 200px;
-        width: 350px;
-        /* font-size: 14px; */
-      }
-    }
+        @media only screen and (max-width: 450px) {
+            .popupdata {
+                height: 200px;
+                width: 350px;
+                /* font-size: 14px; */
+            }
+
+            .popuptype {
+                height: 200px;
+                width: 350px;
+                /* font-size: 14px; */
+            }
+        }
     </style>
 
 </head>
@@ -182,8 +188,8 @@
         ***********************************-->
         <div class="nav-header">
             <a href="/dashboard" class="brand-logo" style="padding: 50px 20px;">
-				<img class="new" style="height: 200px; margin-top: 30px;" src="static/logo_white.png" alt="">
-			</a>
+                <img class="new" style="height: 200px; margin-top: 30px;" src="static/logo_white.png" alt="">
+            </a>
 
             <div class="nav-control">
                 <div class="hamburger">
@@ -269,6 +275,11 @@
                             <span class="nav-text">Campaign Details</span>
                         </a>
                     </li>
+                    <li><a class="ai-icon" href="/live_campaign_details">
+                            <i class="fas fa-stream"></i>
+                            <span class="nav-text">Live Campaign</span>
+                        </a>
+                    </li>
                     <li><a class="ai-icon" href="/bulk_calling">
                             <i class="fas fa-phone"></i>
                             <span class="nav-text">Bulk Auto Call</span>
@@ -299,7 +310,8 @@
                                     <div class="col-md-auto" id="remove_tag" style="margin: 10px">
                                         {% with messages = get_flashed_messages(with_categories=true)
                                         %} {% if messages %} {% for category, message in messages %}
-                                        <div class="alert alert-{{category}} alert-dismissable" role="alert" id="inside_alert">
+                                        <div class="alert alert-{{category}} alert-dismissable" role="alert"
+                                            id="inside_alert">
                                             {{message}}
                                         </div>
                                         {% endfor %} {% endif %} {% endwith %}
@@ -309,7 +321,8 @@
                             <div class="card-header">
                                 <h4 class="card-title">Audio File</h4>
                                 <div class="card-body">
-                                    <a class="btn btn-primary" onclick="openPopupdata()" style="cursor: pointer;">Upload File</a>
+                                    <a class="btn btn-primary" onclick="openPopupdata()" style="cursor: pointer;">Upload
+                                        File</a>
                                     <!-- <div class="basic-dropdown">
                                         <div class="dropdown">
                                             <button type="button" class="btn btn-primary dropdown-toggle"
@@ -403,7 +416,10 @@
             <form method="POST" enctype="multipart/form-data" action="/upload_audio_file">
                 <div class="form-group">
                     <center><input type="file" style="width: 70%; font-size: 18px;" name="fileupload" id="fileInput"
-                            multiple class="form-control" required accept=".wav" /><p style="font-size: 13px; color: red; text-align: left; margin-top: 5px; margin-left: 75px;">Upload file size: 3MB</p></center>
+                            multiple class="form-control" required accept=".wav" />
+                        <p style="font-size: 13px; color: red; text-align: left; margin-top: 5px; margin-left: 75px;">
+                            Upload file size: 3MB</p>
+                    </center>
                 </div>
                 <hr style="margin-top: 20px; margin-bottom: 20px;">
 
@@ -425,8 +441,8 @@
                 <div class="form-group">
                     <center>
                         <div class="mb-4" style="width: 70%;">
-                            <input type="text" name="speech_text"
-                                class="form-control" placeholder="Enter Text" required>
+                            <input type="text" name="speech_text" class="form-control" placeholder="Enter Text"
+                                required>
                         </div>
                         <div class="mb-4" style="width: 70%;">
                             <select name="language" class="form-control" required>
