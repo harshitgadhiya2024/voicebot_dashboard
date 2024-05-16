@@ -52,7 +52,7 @@ def main_process(user_id):
             if var["file_status"] == "active":
                 del var["_id"]
                 filename = var["audio_file_name"]
-                data_response = main_dict.get("filename", "nothing")
+                data_response = main_dict.get(filename, "nothing")
                 if data_response=="nothing":
                     pass
                 else:

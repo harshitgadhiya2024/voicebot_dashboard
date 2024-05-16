@@ -53,3 +53,4 @@ pydantic_core
 python-dotenv
 ipython
 aiohttp
+gtts

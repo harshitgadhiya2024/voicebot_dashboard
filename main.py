@@ -23,7 +23,7 @@ from operations.mongo_connection import (mongo_connect, data_added, find_all_dat
 import json, requests
 import pandas as pd
 import audioread
-from pydub import AudioSegment
+from gtts import gTTS
 
 secreat_id = uuid.uuid4().hex
 
@@ -51,7 +51,7 @@ app.config["user_token"] = {}
 secure_type = constant_data["secure_type"]
 
 # logger & MongoDB connection
-logger_con(app=app)
+# logger_con(app=app)
 client = mongo_connect(app=app)
 db = client["voicebot"]
 
@@ -470,13 +470,13 @@ def register():
                 "password": password,
                 "company_name": company_name,
                 "status": "deactivate",
-                "token": 10
+                "token": 50
             }  
             app.config["userbase_recording"][username]={}
             app.config["userbase_recording"][username]["last_number"] = 1
 
             data_added(app, db, "user_data", register_dict) 
-            points_mapping_dict = {"user_id": user_id, "points": 10, "campaigns": 0, "calls": 0}
+            points_mapping_dict = {"user_id": user_id, "points": 50, "campaigns": 0, "calls": 0}
             app.config["voice_details"][user_id] = points_mapping_dict
             data_added(app, db, "points_mapping", points_mapping_dict)
             flash("Register Successfully...", "success")  
@@ -501,12 +501,81 @@ def dashboard():
         points = user_points[0]["points"]
         campaigns = user_points[0]["campaigns"]
         calls = user_points[0]["calls"]
-        return render_template("index.html", username=username, points=points, calls=calls, campaigns=campaigns)
+        all_company_data = find_spec_data(app, db, "customer_company_data", {"user_id": int(user_id)})
+        all_company_data = list(all_company_data)
+        if all_company_data:
+            all_company_data = all_company_data[0]
+            get_phonenumber = all_company_data.get("phonenumber", "nothing")
+            status = all_company_data.get("status", "nothing")
+            if get_phonenumber=="nothing" and status=="inactive":
+                return render_template("index.html", username=username, points=points, calls=calls, campaigns=campaigns)
+            else:
+                return render_template("index.html", username=username, points=points, calls=calls, campaigns=campaigns, phonenumber=get_phonenumber)
+        else:
+            return render_template("index.html", username=username, points=points, calls=calls, campaigns=campaigns)
 
     except Exception as e:
         app.logger.debug(f"error is {e}")
         return redirect(url_for('login', _external=True, _scheme=secure_type))
-    
+
+@app.route('/inputnodeapi', methods=['GET', 'POST'])
+def inputnodeapi():
+    try:
+        uid = request.args.get("uid", "")
+        node_id = request.args.get("node_id", "")
+        timestamp = request.args.get("timestamp", "")
+        clid = request.args.get("clid", "")
+        input = request.args.get("input", "")
+        response = {
+            "action": "tts",
+            "value": "welcome to our company"
+         }
+        return response
+
+    except Exception as e:
+        response = {
+            "action": "tts",
+            "value": "welcome to our company"
+        }
+        return response
+
+@app.route('/get_phone_number', methods=['GET', 'POST'])
+@token_required
+def get_phone_number():
+    try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict["user_id"]
+        if request.method=="POST":
+            company_name = request.form["company_name"]
+            owner_name = request.form["owner_name"]
+            company_cin = request.form["company_cin"]
+            company_gst = request.form["company_gst"]
+
+            if company_cin=="" and company_gst=="":
+                flash("Please provide any one like company CIN and GST", "danger")
+                return redirect(url_for('dashboard', _external=True, _scheme=secure_type))
+            else:
+                mapping_dict = {
+                    "user_id": user_id,
+                    "company_name": company_name,
+                    "owner_name": owner_name,
+                    "company_cin": company_cin,
+                    "company_gst": company_gst,
+                    "phonenumber": "",
+                    "status": "inactive"
+                }
+
+                data_added(app,db,"customer_company_data",mapping_dict)
+                flash("Your details submitted successfully... Please wait to get new company number...", "success")
+                return redirect(url_for('dashboard', _external=True, _scheme=secure_type))
+        else:
+            return {"message": "Methods not allowed..."}
+
+    except Exception as e:
+        app.logger.debug(f"error is {e}")
+        return redirect(url_for('dashboard', _external=True, _scheme=secure_type))
+   
+
 @app.route("/clean_logs", methods=["GET", "POST"])
 def clean_logs():
     try:
@@ -563,14 +632,14 @@ def save_audio():
             get_duraction = int(get_duraction)
             get_cre = int(get_duraction/28)
             get_cre = get_cre+1
-            credits = get_cre*2
+            credits = get_cre*1
 
             register_dict = {
                 "user_id": login_dict["user_id"],
                 "audio_id": voice_id,
                 "audio_file": filename,
                 "duration": get_duraction,
-                "credits": credits,
+                "credits": 1,
                 "download_file_path": download_file_path,
                 "status": "active",
                 "file_status": "active"
@@ -661,7 +730,7 @@ def upload_audio_file():
             get_duraction = int(get_duraction)
             get_cre = int(get_duraction/28)
             get_cre = get_cre+1
-            credits = get_cre*2
+            credits = get_cre*1
             
             register_dict = {
                 "user_id": login_dict["user_id"],
@@ -669,7 +738,7 @@ def upload_audio_file():
                 "audio_file_name": userfile_name,
                 "audio_file_path": filename,
                 "duration": get_duraction,
-                "credits": credits,
+                "credits": 1,
                 "download_file_path": download_file_path,
                 "status": "inactive",
                 "file_status": "active"
@@ -685,6 +754,76 @@ def upload_audio_file():
     except Exception as e:
         app.logger.debug(f"error in save audio route {e}")
         return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
+
+@app.route('/upload_smart_audio_file', methods=['POST'])
+@token_required
+def upload_smart_audio_file():
+    try:
+        language_mapping_dict = {
+            "English": "en",
+            "Hindi": "hi",
+            "Gujarati": "gu"
+        }
+        login_dict = session.get("login_dict", {})
+        username = login_dict["username"]
+        last_number = 1
+        try:
+            last_number = random.randint(10000000000, 99999999999)
+        except:
+            pass
+
+        speech_text = request.form['speech_text']
+        language = request.form['language']
+        language_code = language_mapping_dict[language]
+
+        tts = gTTS(text=speech_text, lang=language_code, slow=False)
+
+        # Saving the converted audio in a file
+        userfile_name = username + str(last_number) + ".wav"
+        filename = app.config["voice_folder"] + userfile_name
+        app.config["userbase_recording"][username] = {}
+        app.config["userbase_recording"][username]["last_number"] = last_number + 1
+        tts.save(filename)
+        print(filename)
+        # filesize = get_file_size(filename)
+        # print(filesize)
+        # if filesize<3:
+        print("coming in here")
+        print("audio save successfully")
+        download_file_path = f"http://dailogwave.site/download/{userfile_name}"
+        api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
+        api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
+        response_status, promptId, message = upload_audio_api_file(api_user_id, api_token, userfile_name, filename)
+        if response_status:
+            get_duraction = get_audio_duration(filename)
+            get_duraction = int(get_duraction)
+            get_cre = int(get_duraction / 28)
+            get_cre = get_cre + 1
+            credits = get_cre * 2
+
+            register_dict = {
+                "user_id": login_dict["user_id"],
+                "audio_id": int(promptId),
+                "audio_file_name": userfile_name,
+                "audio_file_path": filename,
+                "duration": get_duraction,
+                "credits": 1,
+                "download_file_path": download_file_path,
+                "status": "inactive",
+                "file_status": "active"
+            }
+
+            data_added(app, db, "audio_store", register_dict)
+            flash(message, "success")
+            return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
+        else:
+            flash(message, "danger")
+            return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
+
+    except Exception as e:
+        app.logger.debug(f"error in save audio route {e}")
+        return redirect(url_for('upload_audio', _external=True, _scheme=secure_type))
+
 
 def upload_audio_api_file(user_id, token, filename, filepath):
     try:
@@ -896,7 +1035,7 @@ def bulk_calling():
                         campaigns_total = all_points_data[0]["campaigns"]
                         totalcalls = all_points_data[0]["calls"]
 
-                        points_data_mapping = {"user_id": user_id, "campaign_id": str(campaignId), "points_min": points_min, "points_cut": False}
+                        points_data_mapping = {"user_id": user_id, "campaign_id": str(campaignId), "points_min": 1, "points_cut": False}
                         data_added(app, db, "data_points_mapping", points_data_mapping)
 
                         update_mongo_data(app, db, "points_mapping", {"user_id": user_id}, {"campaigns": int(campaigns_total)+1, "calls": int(totalcalls)+len(all_numbers)})
@@ -915,11 +1054,89 @@ def bulk_calling():
     except Exception as e:
         app.logger.debug(f"error in upload audio route {e}")
         return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
-    
+
+@app.route('/smart_calling', methods=['GET', 'POST'])
+@token_required
+def smart_calling():
+    try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
+        if request.method == "POST":
+            campaign_name = request.form["campaign_name"]
+            voiceid = request.form["voiceid"]
+            numberfile = request.files['numberfile']
+            max_retry = request.form.get("max_retry", "0")
+            app.logger.debug(f"all data fetched and voiceid is {voiceid}")
+            app.logger.debug(f"all data fetched and voiceid is {max_retry}")
+
+            audio_user_data = find_spec_data(app, db, "audio_store", {"audio_id": int(voiceid)})
+            audio_user_data = list(audio_user_data)
+            app.logger.debug(f"data of audio user: {audio_user_data}")
+            points_min = audio_user_data[0]["credits"]
+
+            file_name = numberfile.filename
+            filepath = f"static/upload/{file_name}"
+            numberfile.save(filepath)
+            app.logger.debug("file save successfully")
+            exten = file_name.split(".")[-1]
+            api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
+            api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
+            status, baseid, message = get_baseid(api_user_id, file_name, filepath, api_token)
+            if status:
+                if exten == "csv":
+                    df = pd.read_csv(filepath)
+                else:
+                    df = pd.read_excel(filepath)
+
+                all_numbers = list(df["number"])
+                user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+                user_points = list(user_points)
+                points = user_points[0]["points"]
+                required_points = len(all_numbers) * int(points_min)
+                if required_points > points:
+                    flash("Please recharge your account, don't enough points you have...", "warning")
+                else:
+                    status_api, campaignId, message = bulk_calling_with_api(api_user_id, api_token, campaign_name,
+                                                                            baseid, voiceid, max_retry)
+                    app.logger.debug("completed")
+                    if status_api:
+                        all_points_data = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+                        all_points_data = list(all_points_data)
+                        campaigns_total = all_points_data[0]["campaigns"]
+                        totalcalls = all_points_data[0]["calls"]
+
+                        points_data_mapping = {"user_id": user_id, "campaign_id": str(campaignId),
+                                               "points_min": 1, "points_cut": False}
+                        data_added(app, db, "data_points_mapping", points_data_mapping)
+
+                        update_mongo_data(app, db, "points_mapping", {"user_id": user_id},
+                                          {"campaigns": int(campaigns_total) + 1,
+                                           "calls": int(totalcalls) + len(all_numbers)})
+
+                        flash(message, "success")
+                        return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
+                    else:
+                        flash(message, "danger")
+                        return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
+            else:
+                flash(message, "danger")
+                return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
+        else:
+            return render_template("smart_calling.html", username=username)
+
+    except Exception as e:
+        app.logger.debug(f"error in smart calling route {e}")
+        return redirect(url_for('smart_calling', _external=True, _scheme=secure_type))
+
 @app.route('/sample_file', methods=['GET', 'POST'])
 def sample_file():
     try:
-        server_file_name = "static/sample_file/sample_number_file.csv"
+        type = request.args.get("type", "")
+        if type=="smart_numbersfile":
+            server_file_name = "static/sample_file/sample_smart_number_file.csv"
+        else:
+            server_file_name = "static/sample_file/sample_number_file.csv"
         file = os.path.abspath(server_file_name)
         return send_file(file, as_attachment=True)
 
@@ -927,58 +1144,58 @@ def sample_file():
         app.logger.debug(f"error in sample file download {e}")
         return redirect(url_for('sample_file', _external=True, _scheme=secure_type))
     
-@app.route('/voice_callback', methods=['GET', 'POST'])
-def voice_callback():
-    try:
-        number_id = request.args.get("number_id")
-        campaign_id = request.args.get("campaign_id")
-        answer_time = request.args.get("answer_time")
-        status = request.args.get("status")
-        extention = request.args.get("extention")
-        number = request.args.get("number")
-        number = number[1:]
-        app.logger.debug(f"data for calling: number_id:{number_id}, campaign_id: {campaign_id}, answer: {answer_time}, status: {status}, extension: {extention}, number: {number}")
-        if status=="ANSWERED" or status=="BUSY":
-            all_user_campaign = find_spec_data(app, db, "campaign_details", {"campaign_id": campaign_id})
-            all_user_campaign = list(all_user_campaign)
-            user_id = all_user_campaign[0]["user_id"]
-
-            all_user_data = find_spec_data(app, db, "points_mapping", {"user_id": int(user_id)})
-            all_user_data = list(all_user_data)
-            points = all_user_data[0]["points"]
-
-            all_point_user_data = find_spec_data(app, db, "data_points_mapping", {"campaign_id": campaign_id})
-            all_point_user_data = list(all_point_user_data)
-            points_min = all_point_user_data[0]["points_min"]
-
-            all_campaign_data = find_spec_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id})
-            all_campaign_data = list(all_campaign_data)
-            total_answered = all_campaign_data[0]["total_answered"]
-            total_busy = all_campaign_data[0]["total_busy"]
-
-            if status=="ANSWERED":
-                update_mongo_data(app, db, "points_mapping", {"user_id": int(user_id)}, {"points": int(points)-int(points_min)})
-                update_mongo_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id}, {"total_answered": int(total_answered)+1})
-
-            if status == "BUSY":
-                update_mongo_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id}, {"total_busy": int(total_busy)+1})
-
-            new_user_mapping_dict = {
-                "number_id": number_id,
-                "answer_time": answer_time,
-                "status": status,
-                "extension": extention,
-                "timestamp": get_timestamp(app)
-            }
-
-            update_mongo_data(app, db, "user_campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id, "number": str(number)}, new_user_mapping_dict)
-
-        return {"status_code": 200}        
-
-    except Exception as e:
-        app.logger.debug(f"error in voice callback {e}")
-        return redirect(url_for('voice_callback', _external=True, _scheme=secure_type))
-    
+# @app.route('/voice_callback', methods=['GET', 'POST'])
+# def voice_callback():
+#     try:
+#         number_id = request.args.get("number_id")
+#         campaign_id = request.args.get("campaign_id")
+#         answer_time = request.args.get("answer_time")
+#         status = request.args.get("status")
+#         extention = request.args.get("extention")
+#         number = request.args.get("number")
+#         number = number[1:]
+#         app.logger.debug(f"data for calling: number_id:{number_id}, campaign_id: {campaign_id}, answer: {answer_time}, status: {status}, extension: {extention}, number: {number}")
+#         if status=="ANSWERED" or status=="BUSY":
+#             all_user_campaign = find_spec_data(app, db, "campaign_details", {"campaign_id": campaign_id})
+#             all_user_campaign = list(all_user_campaign)
+#             user_id = all_user_campaign[0]["user_id"]
+#
+#             all_user_data = find_spec_data(app, db, "points_mapping", {"user_id": int(user_id)})
+#             all_user_data = list(all_user_data)
+#             points = all_user_data[0]["points"]
+#
+#             all_point_user_data = find_spec_data(app, db, "data_points_mapping", {"campaign_id": campaign_id})
+#             all_point_user_data = list(all_point_user_data)
+#             points_min = all_point_user_data[0]["points_min"]
+#
+#             all_campaign_data = find_spec_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id})
+#             all_campaign_data = list(all_campaign_data)
+#             total_answered = all_campaign_data[0]["total_answered"]
+#             total_busy = all_campaign_data[0]["total_busy"]
+#
+#             if status=="ANSWERED":
+#                 update_mongo_data(app, db, "points_mapping", {"user_id": int(user_id)}, {"points": int(points)-int(points_min)})
+#                 update_mongo_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id}, {"total_answered": int(total_answered)+1})
+#
+#             if status == "BUSY":
+#                 update_mongo_data(app, db, "campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id}, {"total_busy": int(total_busy)+1})
+#
+#             new_user_mapping_dict = {
+#                 "number_id": number_id,
+#                 "answer_time": answer_time,
+#                 "status": status,
+#                 "extension": extention,
+#                 "timestamp": get_timestamp(app)
+#             }
+#
+#             update_mongo_data(app, db, "user_campaign_details", {"user_id": int(user_id), "campaign_id": campaign_id, "number": str(number)}, new_user_mapping_dict)
+#
+#         return {"status_code": 200}
+#
+#     except Exception as e:
+#         app.logger.debug(f"error in voice callback {e}")
+#         return redirect(url_for('voice_callback', _external=True, _scheme=secure_type))
+#
 @app.route("/view_logs", methods=['GET'])
 def view_logs():
     try:
@@ -1030,6 +1247,8 @@ def campaign_details():
         api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
         api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
         all_compaign_data = get_history_campaign_logs(api_user_id, api_token)
+        if all_compaign_data == None:
+            all_compaign_data = []
         coll = db["data_points_mapping"]
         all_user_based_data = coll.find({"user_id": user_id})
         # all_campaign_ids = [var["campaign_id"] for var in all_user_based_data]
@@ -1080,6 +1299,8 @@ def live_campaign_details():
         api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
         api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
         all_compaign_data = get_live_campaign_logs(api_user_id, api_token)
+        if all_compaign_data == None:
+            all_compaign_data = []
         coll = db["data_points_mapping"]
         all_user_based_data = coll.find({"user_id": user_id})
         # all_campaign_ids = [var["campaign_id"] for var in all_user_based_data]
@@ -1232,4 +1453,4 @@ def user_update_password():
         return redirect(url_for('user_update_password', _external=True, _scheme=secure_type))
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80)
+    app.run(host="0.0.0.0", port=80, debug=True)

@@ -3,7 +3,7 @@
 
 <head>
 	<!--Title-->
-	<title>Dailogwave - Calling System</title>
+	<title>Dailogwave - Smart Call System</title>
 
 	<!-- Meta -->
 	<meta charset="utf-8">
@@ -169,13 +169,13 @@
 						</a>
 					</li>
 					<li><a class="ai-icon" href="/bulk_calling">
-							<i class="fas fa-phone" style="background-color: #1EAAE7; color: #fff;"></i>
-							<span class="nav-text activedata" style="color: #1EAAE7;">Bulk Auto Calls</span>
+							<i class="fas fa-phone"></i>
+							<span class="nav-text">Bulk Auto Calls</span>
 						</a>
 					</li>
 					<li><a class="ai-icon" href="/smart_calling">
-							<i class="fas fa-mobile"></i>
-							<span class="nav-text">Smart Voice Calls</span>
+							<i class="fas fa-mobile" style="background-color: #1EAAE7; color: #fff;"></i>
+							<span class="nav-text activedata" style="color: #1EAAE7;">Smart Voice Calls</span>
 						</a>
 					</li>
 					<li><a class="ai-icon" href="/upload_audio">
@@ -205,7 +205,7 @@
 					<div class="col-xl-6">
 						<div class="card">
 							<div class="card-header border-0 pb-0">
-								<h5 class="card-title">Calling System</h5>
+								<h5 class="card-title">Smart Calling System</h5>
 							</div>
 							<div class="row">
 								<div class="col-sm-12">
@@ -221,32 +221,35 @@
 								</div>
 							</div>
 							<div class="card-body">
-								<form method="POST" action="/bulk_calling" enctype="multipart/form-data">
+								<form method="POST" action="/smart_calling" enctype="multipart/form-data">
 									<div class="mb-4">
-										<label class="form-label required">Campaign Name</label>
-										<input type="text" value="{{campaign_name}}" name="campaign_name"
-											class="form-control" placeholder="campaign name" required>
+										<label class="form-label required">Message (Add Dynamic Values)</label>
+										<input type="text" value="{{message}}" name="message"
+											class="form-control" placeholder="Ex. Hello {name}, your exam mark is {mark}." required>
+									</div>
+                                    <div class="mb-4">
+                                        <div class="form-check radio d-inline-block">
+                                            <input class="form-check-input radio-inline" value="personal" type="radio" name="calling_number" id="flexRadioDefault4">
+                                            <label class="form-check-label" for="flexRadioDefault4">
+                                            Personal Number
+                                            </label>
+                                      </div>
+                                      <div class="form-check radio d-inline-block mx-2">
+                                            <input class="form-check-input radio-inline" value="company" type="radio" name="calling_number" id="flexRadioDefault5">
+                                            <label class="form-check-label" for="flexRadioDefault5">
+                                                Company Number
+                                            </label>
+                                      </div> 
+										<!-- <input type="radio" value="personal" name="calling_number" required>Personal Number<br> -->
+										<!-- <input type="radio" value="company" name="calling_number" required>Company Number -->
 									</div>
 									<div class="mb-4">
-										<label class="form-label required">Voice ID</label>
-										<select name="voiceid" class="default-select form-control wide" required>
-											{% for audio_id in all_audio_ids %}
-											<option>{{audio_id}}</option>
-											{% endfor %}
-										</select>
-									</div>
-									<div class="mb-4">
-										<a href="/sample_file?type=numbersfile"
+										<a href="/sample_file?type=smart_numbersfile"
 											style="text-align: right; float: right; color: red; font-weight: 500;">Sample
 											File</a>
 										<label class="form-label required">Numbers File</label>
 										<input class="form-control" name="numberfile" type="file" id="formFile"
 											accept=".csv, .xlsx" required>
-									</div>
-									<div class="mb-4">
-										<label class="form-label">Max Retry</label>
-										<input type="number" value="{{max_retry}}" name="max_retry" class="form-control"
-											placeholder="Maximum call retry to unanswered call">
 									</div>
 									<div class="text-center mb-4">
 										<button type="submit" class="btn btn-primary btn-block">Run Campaign</button>

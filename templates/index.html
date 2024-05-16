@@ -52,6 +52,45 @@
 				color: #fff !important;
 			}
 		}
+
+		.overlaydata {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.5);
+			z-index: 9999;
+			justify-content: center;
+			align-items: center;
+			border-radius: 10px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+		}
+
+		/* Styles for the popup */
+		.popupdata {
+			background-color: #fff;
+			/* padding: 20px; */
+			display: flex;
+			min-height: 260px;
+			box-sizing: border-box;
+			width: 450px;
+			flex-direction: column;
+			align-items: right;
+			gap: 1rem;
+			border-radius: 20px;
+			box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5);
+			font-size: 18px;
+		}
+
+		@media only screen and (max-width: 450px) {
+			.popupdata {
+				height: 200px;
+				width: 350px;
+				/* font-size: 14px; */
+			}
+		}
 	</style>
 
 </head>
@@ -178,7 +217,12 @@
 					</li>
 					<li><a class="ai-icon" href="/bulk_calling">
 							<i class="fas fa-phone"></i>
-							<span class="nav-text">Bulk Auto Call</span>
+							<span class="nav-text">Bulk Auto Calls</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/smart_calling">
+							<i class="fas fa-mobile"></i>
+							<span class="nav-text">Smart Voice Calls</span>
 						</a>
 					</li>
 					<li><a class="ai-icon" href="/upload_audio">
@@ -204,7 +248,7 @@
 					{% if phonenumber %}
 					<p class="btn btn-primary">{{phonenumber}}</p>
 					{% else %}
-					<p class="btn btn-primary">Get Phone Number</p>
+					<p class="btn btn-primary" onclick="openPopupdata()">Get Phone Number</p>
 					{% endif %}
 				</div>
 				<div class="row">
@@ -284,6 +328,34 @@
 
 
 	</div>
+	<div class="overlaydata" id="overlaydata">
+		<div class="popupdata">
+			<h3 style="padding: 20px 0px 0px 20px; color: #000;">Company PhoneNumber</h3>
+			<hr style="margin: 0;">
+			<form method="POST" enctype="multipart/form-data" action="/get_phone_number">
+				<div class="form-group">
+					<center>
+						<input type="text" style="width: 70%; margin-bottom: 10px;" name="company_name"
+							placeholder="Enter Company Name *" id="company_name" class="form-control" required />
+						<input type="text" style="width: 70%; margin-bottom: 10px;" name="owner_name"
+							placeholder="Enter Owner Name *" id="owner_name" class="form-control" required />
+						<input type="text" style="width: 70%; margin-bottom: 10px;" name="company_cin"
+							placeholder="Enter Company CIN Number" id="company_cin" class="form-control" />
+						<input type="text" style="width: 70%; margin-bottom: 10px;" name="company_gst"
+							placeholder="Enter Company GST Number" id="company_gst" class="form-control" />
+					</center>
+				</div>
+				<hr style="margin-top: 20px; margin-bottom: 20px;">
+
+				<div class="newbutton" style="padding: 0px 20px; text-align: right; margin-bottom: 10px;">
+					<a type="button" class="btn btn-dark border-0" onclick="closePopupdata()">
+						Close
+					</a>
+					<button type="submit" class="btn btn-primary" id="deletedatamain">Get</button>
+				</div>
+			</form>
+		</div>
+	</div>
 	<!--**********************************
         Main wrapper end
     ***********************************-->
@@ -292,6 +364,14 @@
         Scripts
     ***********************************-->
 	<!-- Required vendors -->
+	<script>
+		function openPopupdata() {
+			document.getElementById("overlaydata").style.display = "flex";
+		}
+		function closePopupdata() {
+			document.getElementById("overlaydata").style.display = "none";
+		}
+	</script>
 	<script src="static/assets/vendor/global/global.min.js"></script>
 	<script src="static/assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
 	<script src="static/assets/vendor/chart-js/chart.bundle.min.js"></script>

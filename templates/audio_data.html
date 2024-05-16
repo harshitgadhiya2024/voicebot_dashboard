@@ -280,11 +280,16 @@
                             <span class="nav-text">Live Campaign</span>
                         </a>
                     </li>
-                    <li><a class="ai-icon" href="/bulk_calling">
-                            <i class="fas fa-phone"></i>
-                            <span class="nav-text">Bulk Auto Call</span>
-                        </a>
-                    </li>
+                   <li><a class="ai-icon" href="/bulk_calling">
+							<i class="fas fa-phone"></i>
+							<span class="nav-text">Bulk Auto Calls</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/smart_calling">
+							<i class="fas fa-mobile"></i>
+							<span class="nav-text">Smart Voice Calls</span>
+						</a>
+					</li>
                     <li><a class="ai-icon" href="/upload_audio">
                             <i class="fas fa-file-audio" style="background-color: #1EAAE7; color: #fff;"></i>
                             <span class="nav-text activedata" style="color: #1EAAE7;">Upload Audio</span>
@@ -333,12 +338,12 @@
                                                 <a class="dropdown-item" onclick="openPopupdata()"
                                                     style="cursor: pointer;">Upload File</a>
                                                 <a class="dropdown-item" onclick="openPopupnew()"
-                                                    style="cursor: pointer;">Record Audio(AI)</a>
+                                                    style="cursor: pointer;">Smart Voice</a>
                                             </div>
                                         </div>
-                                    </div>-->
+                                    </div> -->
                                 </div>
-                            </div> -
+                            </div>
                             <div class="card-body">
                                 <table id="responsiveTable" class="display responsive nowrap w-100">
                                     <thead>
@@ -435,9 +440,9 @@
 
     <div class="overlaynew" id="overlaynew">
         <div class="popupdata">
-            <h3 style="padding: 20px 0px 0px 20px; color: #000;">Record Audio (AI)</h3>
+            <h3 style="padding: 20px 0px 0px 20px; color: #000;">Smart Voice</h3>
             <hr style="margin: 0;">
-            <form method="POST" enctype="multipart/form-data" action="/upload_ai_audio_file">
+            <form method="POST" enctype="multipart/form-data" action="/upload_smart_audio_file">
                 <div class="form-group">
                     <center>
                         <div class="mb-4" style="width: 70%;">
