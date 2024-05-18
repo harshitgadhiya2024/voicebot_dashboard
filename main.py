@@ -990,7 +990,7 @@ def bulk_calling():
         all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
         all_audio_ids = []
         for var in all_audio_data:
-            if var["file_status"] == "active":
+            if var["status"] == "active":
                 all_audio_ids.append(var["audio_id"])
         if request.method=="POST":
             campaign_name = request.form["campaign_name"]
