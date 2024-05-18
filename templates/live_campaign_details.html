@@ -312,7 +312,7 @@
             const apiUrl = `/export_data?type=live&campaign_id=${campaign_id}`;
 
             // Make a GET request
-            const response = await fetch("apiUrl", {
+            const response = await fetch(apiUrl, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
