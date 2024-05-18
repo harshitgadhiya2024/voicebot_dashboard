@@ -1386,32 +1386,78 @@ def export_panel_data(app, database_data, panel, type):
 
     except Exception as e:
         app.logger.debug(f"Error in export data from database: {e}")
+
+def remove_file(response, local_filename):
+    try:
+        os.remove(local_filename)
+    except Exception as error:
+        app.logger.error("Error removing or closing downloaded file handle", error)
+    return response
     
 @app.route('/export_data', methods=['GET', 'POST'])
 @token_required
 def export_data():
     try:
         login_dict = session.get("login_dict", {})
-        type = request.args.get("type", "")
         campaign_id = request.args.get("campaign_id", "")
-        print(campaign_id)
-        db = client["voicebot"]
-        coll = db["user_campaign_details"]
-        all_campaign_data = coll.find({"campaign_id": campaign_id})
-        all_campaign_data = list(all_campaign_data)
-        print(all_campaign_data)
-        all_data = []
-        for each_res in all_campaign_data:
-            del each_res["_id"]
-            all_data.append(each_res)
-        panel = "data"
-        output_path = export_panel_data(app, all_data, panel, type)
-        return send_file(output_path, as_attachment=True)
-        
+        type = request.args.get("type", "")
+        output_path = ""
+        api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
+        api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
+        url = "https://obdapi.ivrsms.com/api/obd/report/generate"
+        payload = json.dumps({
+            "campaignId": int(campaign_id),
+            "reportType": "full"
+        })
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {api_token}'
+        }
+        response = requests.request("POST", url, headers=headers, data=payload)
+
+        url = f"https://obdapi.ivrsms.com/api/obd/report/download/{api_user_id}"
+
+        payload = {}
+        headers = {
+            'Authorization': f'Bearer {api_token}'
+        }
+
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        response_text = json.loads(response.text)
+        flag = False
+        report_url = ""
+        for report in response_text:
+            status = report.get("status")
+            reportType = report.get("reportType")
+            campaignId = report.get("campaignId")
+            if campaignId == int(campaign_id):
+                if status=="2" and reportType=="full":
+                    flag = True
+                    report_url = report.get("reportUrl")
+
+        if flag:
+            return {"report_url": report_url, "status": 200}
+        else:
+            flash("Please wait..Your report will generated in few times", "warning")
+            return {"status": 403}
+        # print(campaign_id)
+        # db = client["voicebot"]
+        # coll = db["user_campaign_details"]
+        # all_campaign_data = coll.find({"campaign_id": campaign_id})
+        # all_campaign_data = list(all_campaign_data)
+        # print(all_campaign_data)
+        # all_data = []
+        # for each_res in all_campaign_data:
+        #     del each_res["_id"]
+        #     all_data.append(each_res)
+        # panel = "data"
+        # output_path = export_panel_data(app, all_data, panel, type)
+
     except Exception as e:
         app.logger.debug(f"error in upload audio route {e}")
-        return redirect(url_for('bulk_calling', _external=True, _scheme=secure_type))
-  
+        return {"status": 403}
+
 @app.route("/user_update_password", methods=["GET", "POST"])
 @token_required
 def user_update_password():
