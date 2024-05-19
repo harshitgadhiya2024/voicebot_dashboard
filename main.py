@@ -1266,20 +1266,13 @@ def campaign_details():
                     "campaign_name": datavar["campaignName"],
                     "total_calls": datavar["numbersUploaded"],
                     "processed_number": datavar["numbersProcessed"],
-                    "total_answered": datavar["numbersProcessed"],
+                    "total_answered": datavar["callsConnected"],
                     "total_busy": int(datavar["numbersUploaded"]) - int(datavar["numbersProcessed"])
                 }
                 all_user_id_data.append(mapping_dict)
                 data_check = find_spec_data(app, db, "points_mapping", {"user_id": int(user_id)})
                 data_check = list(data_check)
                 points = data_check[0]["points"]
-                if not all_campaign_ids_dict[str(campaignId)]["points_cut"]:
-                    if int(datavar["numbersUploaded"])==int(datavar["numbersProcessed"]):
-                        answered_calls = int(datavar["numbersProcessed"])
-                        points_min = all_campaign_ids_dict[str(campaignId)]["points_min"]
-                        cut_point = answered_calls*int(points_min)
-                        update_mongo_data(app, db, "points_mapping", {"user_id": user_id}, {"points": int(points)-int(cut_point)})
-                        update_mongo_data(app, db, "data_points_mapping", {"user_id": int(user_id), "campaign_id": str(campaignId)}, {"points_cut": True})
 
         all_user_id_data = all_user_id_data[::-1]
         return render_template("campaign_details.html", username=username,all_user_id_data=all_user_id_data)
@@ -1318,20 +1311,13 @@ def live_campaign_details():
                     "campaign_name": datavar["campaignName"],
                     "total_calls": datavar["numbersUploaded"],
                     "processed_number": datavar["numbersProcessed"],
-                    "total_answered": datavar["numbersProcessed"],
+                    "total_answered": datavar["callsConnected"],
                     "total_busy": int(datavar["numbersUploaded"]) - int(datavar["numbersProcessed"])
                 }
                 all_user_id_data.append(mapping_dict)
                 data_check = find_spec_data(app, db, "points_mapping", {"user_id": int(user_id)})
                 data_check = list(data_check)
                 points = data_check[0]["points"]
-                if not all_campaign_ids_dict[str(campaignId)]["points_cut"]:
-                    if int(datavar["numbersUploaded"])==int(datavar["numbersProcessed"]):
-                        answered_calls = int(datavar["numbersProcessed"])
-                        points_min = all_campaign_ids_dict[str(campaignId)]["points_min"]
-                        cut_point = answered_calls*int(points_min)
-                        update_mongo_data(app, db, "points_mapping", {"user_id": user_id}, {"points": int(points)-int(cut_point)})
-                        update_mongo_data(app, db, "data_points_mapping", {"user_id": int(user_id), "campaign_id": str(campaignId)}, {"points_cut": True})
 
         all_user_id_data = all_user_id_data[::-1]
         return render_template("live_campaign_details.html", username=username,all_user_id_data=all_user_id_data)
@@ -1497,6 +1483,33 @@ def user_update_password():
         app.logger.debug(f"Error in user update password route: {e}")
         flash("Please try again...","danger")
         return redirect(url_for('user_update_password', _external=True, _scheme=secure_type))
+
+@app.route("/user_points", methods=["GET", "POST"])
+@token_required
+def user_points():
+    """
+    Handling teacher register process
+    :return: teacher register template
+    """
+    try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
+        coll = db["points_history"]
+        new_data = coll.find({"user_id": int(user_id)})
+        new_data = list(new_data)
+        all_user_id_data = []
+        for var in new_data:
+            del var["_id"]
+            all_user_id_data.append(var)
+
+        return render_template("user_points.html", user_id=user_id, username=username, all_user_id_data=all_user_id_data)
+
+    except Exception as e:
+        app.logger.debug(f"Error in user points route: {e}")
+        flash("Please try again...","danger")
+        return redirect(url_for('user_points', _external=True, _scheme=secure_type))
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=80, debug=True)

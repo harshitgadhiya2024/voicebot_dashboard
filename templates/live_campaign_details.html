@@ -3,7 +3,7 @@
 
 <head>
     <!--Title-->
-    <title>Dailogwave - All Campaign</title>
+    <title>Dailogwave - Live Campaign</title>
 
     <!-- Meta -->
     <meta charset="utf-8">
@@ -185,6 +185,11 @@
                             <span class="nav-text">Upload Audio</span>
                         </a>
                     </li>
+                    <li><a class="ai-icon" href="/user_points">
+                            <i class="fas fa-hand-point-up"></i>
+                            <span class="nav-text">User Points</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -207,7 +212,7 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title">All Compaign</h4>
+                                <h4 class="card-title">Live Compaign</h4>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -229,7 +234,6 @@
                                             <th>Compaign ID</th>
                                             <th>Compaign Name</th>
                                             <th>Total Calls</th>
-                                            <th>Processed Number</th>
                                             <th>Total Answered</th>
                                             <th>Total Busy</th>
                                             <th>Detailed Report</th>
@@ -241,7 +245,6 @@
                                             <td>{{var["campaign_id"]}}</td>
                                             <td>{{var["campaign_name"]}}</td>
                                             <td>{{var["total_calls"]}}</td>
-                                            <td>{{var["processed_number"]}}</td>
                                             <td>{{var["total_answered"]}}</td>
                                             <td>{{var["total_busy"]}}</td>
                                             <td>
@@ -326,8 +329,12 @@
             console.log("API Response:", responseData);
             var report_url = responseData["report_url"];
             console.log(report_url);
-            window.location.href = report_url;
-            console.log("download report");
+            if (report_url == null) {
+                window.location.reload();
+            } else {
+                window.location.href = report_url;
+                console.log("download report");
+            }
         }
     </script>
 </body>

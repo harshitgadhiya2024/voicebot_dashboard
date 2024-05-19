@@ -3,7 +3,7 @@
 
 <head>
     <!--Title-->
-    <title>Dailogwave - All Campaign</title>
+    <title>Dailogwave - User Points</title>
 
     <!-- Meta -->
     <meta charset="utf-8">
@@ -161,8 +161,8 @@
                         </a>
                     </li>
                     <li><a class="ai-icon" href="/campaign_details">
-                            <i class="fas fa-tasks" style="background-color: #1EAAE7; color: #fff;"></i>
-                            <span class="nav-text activedata" style="color: #1EAAE7;">Campaign Details</span>
+                            <i class="fas fa-tasks"></i>
+                            <span class="nav-text">Campaign Details</span>
                         </a>
                     </li>
                     <li><a class="ai-icon" href="/live_campaign_details">
@@ -186,8 +186,8 @@
                         </a>
                     </li>
                     <li><a class="ai-icon" href="/user_points">
-                        <i class="fas fa-hand-point-up"></i>
-                        <span class="nav-text">User Points</span>
+                        <i class="fas fa-hand-point-up" style="background-color: #1EAAE7; color: #fff;"></i>
+                        <span class="nav-text activedata" style="color: #1EAAE7;">User Points</span>
                     </a>
                 </li>
                 </ul>
@@ -202,17 +202,11 @@
         ***********************************-->
         <div class="content-body default-height">
             <div class="container-fluid">
-                <div style="margin-bottom: 30px;">
-                    <marquee style="padding: 0; margin: 0;">
-                        <p style="color: red; padding: 13px 0 0px 0;">Please Note: Download report after your compaign
-                            is successfully completed...</p>
-                    </marquee>
-                </div>
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title">All Compaign</h4>
+                                <h4 class="card-title">User Points</h4>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -232,38 +226,18 @@
                                     <thead>
                                         <tr>
                                             <th>Compaign ID</th>
-                                            <th>Compaign Name</th>
-                                            <th>Total Calls</th>
-                                            <th>Processed Number</th>
-                                            <th>Total Answered</th>
-                                            <th>Total Busy</th>
-                                            <th>Detailed Report</th>
+                                            <th>Answered Calls</th>
+                                            <th>Points</th>
+                                            <th>Remaining Points</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {% for var in all_user_id_data %}
                                         <tr>
                                             <td>{{var["campaign_id"]}}</td>
-                                            <td>{{var["campaign_name"]}}</td>
-                                            <td>{{var["total_calls"]}}</td>
-                                            <td>{{var["processed_number"]}}</td>
-                                            <td>{{var["total_answered"]}}</td>
-                                            <td>{{var["total_busy"]}}</td>
-                                            <td>
-                                                <a class="btn btn-primary" onclick="getreport('{{var['campaign_id']}}')" style="cursor: pointer;">Download</a>
-                                                <!-- <div class="basic-dropdown">
-                                                    <div class="dropdown">
-                                                        <button type="button" class="btn btn-primary dropdown-toggle"
-                                                            data-bs-toggle="dropdown">
-                                                            Export Data
-                                                        </button>
-                                                        <div class="dropdown-menu">
-                                                            <a class="dropdown-item" style="cursor: pointer;" href="/export_data?campaign_id={{var['campaign_id']}}">Csv</a>
-                                                            <a class="dropdown-item" style="cursor: pointer;" href="/export_data?campaign_id={{var['campaign_id']}}">Excel</a>
-                                                        </div>
-                                                    </div>
-                                                </div> -->
-                                            </td>
+                                            <td>{{var["connected_calls"]}}</td>
+                                            <td>{{var["previous_points"]}}</td>
+                                            <td>{{var["remianing_points"]}}</td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -332,14 +306,8 @@
             console.log("API Response:", responseData);
             var report_url = responseData["report_url"];
             console.log(report_url);
-            if (report_url == null) {
-                window.location.reload();
-            } else {
-                window.location.href = report_url;
-                console.log("download report");
-            }
-
-            
+            window.location.href = report_url;
+            console.log("download report");
             // window.location.href = "/campaign_details"
         }
     </script>
