@@ -536,15 +536,9 @@ def inputnodeapi():
         uid = request.args.get("uid", "")
         node_id = request.args.get("node_id", "")
         timestamp = request.args.get("timestamp", "")
-        clid = request.args.get("clid", "")
-        app.logger.debug(f"clid1: {clid}")
-        input = request.args.get("input", "")
         response_data = json.loads(request.data)
         clid = response_data.get("clid", "")
         app.logger.debug(f"clid2: {clid}")
-        if request.method=="POST":
-            clid = request.form.get("clid", "")
-            app.logger.debug(f"clid3: {clid}")
 
         smart_voicecall_details=app.config["smart_voicecall_details"]
         app.logger.debug(smart_voicecall_details)
