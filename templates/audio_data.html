@@ -205,56 +205,59 @@
             Header start
         ***********************************-->
         <div class="header">
-            <div class="header-content">
-                <nav class="navbar navbar-expand">
-                    <div class="collapse navbar-collapse justify-content-between">
-                        <div class="header-left">
+			<div class="header-content">
+				<nav class="navbar navbar-expand">
+					<div class="collapse navbar-collapse justify-content-between">
+						<div class="header-left">
+							<li class="nav-item dropdown notification_dropdown">
+								<p class="btn btn-warning" style="margin: 0; margin-right: 20px;">Credits:
+									<b>{{points}}</b></p>
+							</li>
+						</div>
+						<ul class="navbar-nav header-right">
+							<li class="nav-item dropdown notification_dropdown">
+								<a class="nav-link bell dz-theme-mode" href="javascript:void(0);">
+									<i id="icon-light" class="fas fa-sun"></i>
+									<i id="icon-dark" class="fas fa-moon"></i>
 
-                        </div>
-                        <ul class="navbar-nav header-right">
-                            <li class="nav-item dropdown notification_dropdown">
-                                <a class="nav-link bell dz-theme-mode" href="javascript:void(0);">
-                                    <i id="icon-light" class="fas fa-sun"></i>
-                                    <i id="icon-dark" class="fas fa-moon"></i>
-
-                                </a>
-                            </li>
-                            <li class="nav-item dropdown header-profile">
-                                <a class="nav-link" role="button" data-bs-toggle="dropdown">
-                                    <div class="header-info">
-                                        <span class="text-black">Hello, <strong>{{username}}</strong></span>
-                                        <p class="fs-12 mb-0">User</p>
-                                    </div>
-                                    {% if company_logo %}
-                                    <img src="{{company_logo}}" width="20" alt="">
-                                    {% else %}
-                                    <p
-                                        style="padding: 10px 20px; background-color: #2BC155; border-radius: 50%; margin: 10px 0px; color: #fff; font-weight: 600; ">
-                                        {{username[0].title()}}</p>
-                                    {% endif %}
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end">
-                                    <a href="/logout" class="dropdown-item ai-icon">
-                                        <svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" class="text-danger"
-                                            width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                                            <polyline points="16 17 21 12 16 7"></polyline>
-                                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                                        </svg>
-                                        <span class="ms-2">Logout </span>
-                                    </a>
-                                    <a href="/user_update_password" class="dropdown-item ai-icon">
-                                        <i class="fas fa-edit" style="color: red;"></i>
-                                        <span class="ms-2">Update Password </span>
-                                    </a>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-            </div>
-        </div>
+								</a>
+							</li>
+							<li class="nav-item dropdown header-profile">
+								<a class="nav-link" role="button" data-bs-toggle="dropdown">
+									<div class="header-info">
+										<span class="text-black">Hello, <strong>{{username}}</strong></span>
+										<p class="fs-12 mb-0">User</p>
+									</div>
+									{% if company_logo %}
+									<img src="{{company_logo}}" width="20" alt="">
+									{% else %}
+									<p
+										style="padding: 10px 20px; background-color: #2BC155; border-radius: 50%; margin: 10px 0px; color: #fff; font-weight: 600; ">
+										{{username[0].title()}}</p>
+									{% endif %}
+								</a>
+								<div class="dropdown-menu dropdown-menu-end">
+									<a href="/logout" class="dropdown-item ai-icon">
+										<svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" class="text-danger"
+											width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+											stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+											<polyline points="16 17 21 12 16 7"></polyline>
+											<line x1="21" y1="12" x2="9" y2="12"></line>
+										</svg>
+										<span class="ms-2">Logout </span>
+									</a>
+									<a href="/user_update_password" class="dropdown-item ai-icon">
+										<i class="fas fa-edit" style="color: red;"></i>
+										<span class="ms-2">Update Password </span>
+									</a>
+								</div>
+							</li>
+						</ul>
+					</div>
+				</nav>
+			</div>
+		</div>
         <!--**********************************
             Header end ti-comment-alt
         ***********************************-->
@@ -263,46 +266,47 @@
             Sidebar start
         ***********************************-->
         <div class="deznav">
-            <div class="deznav-scroll">
-                <ul class="metismenu" id="menu">
-                    <li><a class="ai-icon" href="/dashboard">
-                            <i class="flaticon-381-networking"></i>
-                            <span class="nav-text">Dashboard</span>
-                        </a>
-                    </li>
-                    <li><a class="ai-icon" href="/campaign_details">
-                            <i class="fas fa-tasks"></i>
-                            <span class="nav-text">Campaign Details</span>
-                        </a>
-                    </li>
-                    <li><a class="ai-icon" href="/live_campaign_details">
-                            <i class="fas fa-stream"></i>
-                            <span class="nav-text">Live Campaign</span>
-                        </a>
-                    </li>
-                   <li><a class="ai-icon" href="/bulk_calling">
+			<div class="deznav-scroll">
+				<ul class="metismenu" id="menu">
+					<li>
+						<a class="ai-icon" href="/dashboard">
+							<i class="flaticon-381-networking"></i>
+							<span class="nav-text">Dashboard</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/user_data">
+							<i class="fas fa-user"></i>
+							<span class="nav-text">User Data</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/campaign_details">
+							<i class="fas fa-tasks"></i>
+							<span class="nav-text">Campaign Details</span>
+						</a>
+					</li>
+					<!-- <li><a class="ai-icon" href="/bulk_calling">
 							<i class="fas fa-phone"></i>
 							<span class="nav-text">Bulk Auto Calls</span>
 						</a>
-					</li>
-					<!-- <li><a class="ai-icon" href="/smart_calling">
-							<i class="fas fa-mobile"></i>
-							<span class="nav-text">Smart Voice Calls</span>
-						</a>
 					</li> -->
-                    <li><a class="ai-icon" href="/upload_audio">
-                            <i class="fas fa-file-audio" style="background-color: #1EAAE7; color: #fff;"></i>
-                            <span class="nav-text activedata" style="color: #1EAAE7;">Upload Audio</span>
-                        </a>
-                    </li>
-                    <li><a class="ai-icon" href="/user_points">
-                        <i class="fas fa-hand-point-up"></i>
-                        <span class="nav-text">User Points</span>
-                    </a>
-                </li>
-                </ul>
-            </div>
-        </div>
+					<li><a class="ai-icon" href="/text_to_speech">
+							<i class="fas fa-file-audio"></i>
+							<span class="nav-text">Smart Audios</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/upload_audio">
+							<i class="fas fa-file-audio" style="background-color: #1EAAE7; color: #fff;"></i>
+							<span class="nav-text activedata" style="color: #1EAAE7;">Upload Audio</span>
+						</a>
+					</li>
+					<li><a class="ai-icon" href="/user_points">
+							<i class="fas fa-hand-point-up"></i>
+							<span class="nav-text">Points History</span>
+						</a>
+					</li>
+				</ul>
+			</div>
+		</div>
         <!--**********************************
             Sidebar end
         ***********************************-->
@@ -330,9 +334,10 @@
                             </div>
                             <div class="card-header">
                                 <h4 class="card-title">Audio File</h4>
-                                <div class="card-body">
-                                    <a class="btn btn-primary" onclick="openPopupdata()" style="cursor: pointer;">Upload
-                                        File</a>
+                                <a class="btn btn-primary" onclick="openPopupdata()" style="cursor: pointer;">Upload
+                                    File</a>
+                                    <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#exampleemailModal">Smart Voice</button> -->
                                     <!-- <div class="basic-dropdown">
                                         <div class="dropdown">
                                             <button type="button" class="btn btn-primary dropdown-toggle"
@@ -347,7 +352,6 @@
                                             </div>
                                         </div>
                                     </div> -->
-                                </div>
                             </div>
                             <div class="card-body">
                                 <table id="responsiveTable" class="display responsive nowrap w-100">
@@ -416,6 +420,45 @@
         <!--**********************************
            Support ticket button end
         ***********************************-->
+        <div class="modal fade" id="exampleemailModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title" id="exampleemailModalLabel">Smart Voice</h3>
+                    </div>
+                    <div class="modal-body">
+                        <center><p style="color: red;">Smart Voice Name mentioned on smart audio page</p></center>
+                        <form method="post" action="/upload_smart_audio_file" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-12 col-sm-12">
+                                <div class="form-group local-forms">
+                                    <label>Text <span class="login-danger"
+                                        style="color: red;">*</span></label>
+                                    <textarea rows="6" name="speechtext" id="speechtext" class="form-control" placeholder="Hello...,"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-12">
+                                <div class="form-group local-forms">
+                                    <label>Voice Name</label>
+                                    <select name="voicename" id="voicename" class="form-control">
+                                        {% for var in all_audios_data %}
+                                        <option>{{var}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                                Close
+                            </button>
+                            <button type="submit" id="emailsubmit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
     </div>
@@ -447,31 +490,27 @@
         <div class="popupdata">
             <h3 style="padding: 20px 0px 0px 20px; color: #000;">Smart Voice</h3>
             <hr style="margin: 0;">
-            <form method="POST" enctype="multipart/form-data" action="/upload_smart_audio_file">
-                <div class="form-group">
-                    <center>
-                        <div class="mb-4" style="width: 70%;">
-                            <input type="text" name="speech_text" class="form-control" placeholder="Enter Text"
-                                required>
-                        </div>
-                        <div class="mb-4" style="width: 70%;">
-                            <select name="language" class="form-control" required>
-                                <option>English</option>
-                                <option>Hindi</option>
-                                <option>Gujarati</option>
-                            </select>
-                        </div>
-                    </center>
-                </div>
-                <hr style="margin-top: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                    <div class="mb-4" style="width: 70%;">
+                        <label>Text <span style="color: red;">*</span></label>
+                        <textarea rows="3" name="speeh_text" class="form-control" placeholder="Enter Text" required></textarea>
+                    </div>
+                    <div class="mb-4" style="width: 70%;">
+                        <select name="Voice" class="form-control" required>
+                            <option>English</option>
+                            <option>Hindi</option>
+                            <option>Gujarati</option>
+                        </select>
+                    </div>
+            </div>
+            <hr style="margin-top: 20px; margin-bottom: 20px;">
 
-                <div class="newbutton" style="padding: 0px 20px; text-align: right; margin-bottom: 20px;">
-                    <a type="button" class="btn btn-dark border-0" onclick="closePopupnew()">
-                        Close
-                    </a>
-                    <button type="submit" class="btn btn-primary" id="deletedatamain">Generate</button>
-                </div>
-            </form>
+            <div class="newbutton" style="padding: 0px 20px; text-align: right; margin-bottom: 20px;">
+                <a type="button" class="btn btn-dark border-0" onclick="closePopupnew()">
+                    Close
+                </a>
+                <button type="button" class="btn btn-primary" id="deletedatamain">Generate</button>
+            </div>
         </div>
     </div>
 

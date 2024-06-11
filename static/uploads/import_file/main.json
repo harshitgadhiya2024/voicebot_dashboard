@@ -1,0 +1,23 @@
+[
+    {
+        "username":"hgadhiya01",
+        "name": "harshit gadhiya",
+        "email": "harshitgadhiya8980@gmail.com",
+        "phone": "+919316727742",
+        "group": "user1"
+    },
+    {
+        "username":"hgadhiya02",
+        "name": "harshit patel",
+        "email": "hgadhiya8980@gmail.com",
+        "phone": "+919601406607",
+        "group": "user2"
+    },
+    {
+        "username":"hgadhiya03",
+        "name": "harshit",
+        "email": "harshitpatel8980@gmail.com",
+        "phone": "+919601406607",
+        "group": "user1"
+    }
+]

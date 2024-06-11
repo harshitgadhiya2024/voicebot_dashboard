@@ -143,7 +143,10 @@
 				<nav class="navbar navbar-expand">
 					<div class="collapse navbar-collapse justify-content-between">
 						<div class="header-left">
-
+							<li class="nav-item dropdown notification_dropdown">
+								<p class="btn btn-warning" style="margin: 0; margin-right: 20px;">Credits:
+									<b>{{points}}</b></p>
+							</li>
 						</div>
 						<ul class="navbar-nav header-right">
 							<li class="nav-item dropdown notification_dropdown">
@@ -205,36 +208,36 @@
 							<span class="nav-text activedata" style="color: #1EAAE7;">Dashboard</span>
 						</a>
 					</li>
+					<li><a class="ai-icon" href="/user_data">
+							<i class="fas fa-user"></i>
+							<span class="nav-text">User Data</span>
+						</a>
+					</li>
 					<li><a class="ai-icon" href="/campaign_details">
 							<i class="fas fa-tasks"></i>
 							<span class="nav-text">Campaign Details</span>
 						</a>
 					</li>
-					<li><a class="ai-icon" href="/live_campaign_details">
-							<i class="fas fa-stream"></i>
-							<span class="nav-text">Live Campaign</span>
-						</a>
-					</li>
-					<li><a class="ai-icon" href="/bulk_calling">
+					<!-- <li><a class="ai-icon" href="/bulk_calling">
 							<i class="fas fa-phone"></i>
 							<span class="nav-text">Bulk Auto Calls</span>
 						</a>
-					</li>
-					<!-- <li><a class="ai-icon" href="/smart_calling">
-							<i class="fas fa-mobile"></i>
-							<span class="nav-text">Smart Voice Calls</span>
-						</a>
 					</li> -->
+					<li><a class="ai-icon" href="/text_to_speech">
+							<i class="fas fa-file-audio"></i>
+							<span class="nav-text">Smart Audios</span>
+						</a>
+					</li>
 					<li><a class="ai-icon" href="/upload_audio">
 							<i class="fas fa-file-audio"></i>
 							<span class="nav-text">Upload Audio</span>
 						</a>
 					</li>
 					<li><a class="ai-icon" href="/user_points">
-						<i class="fas fa-hand-point-up"></i>
-						<span class="nav-text">User Points</span>
-					</a>
-				</li>
+							<i class="fas fa-hand-point-up"></i>
+							<span class="nav-text">Points History</span>
+						</a>
+					</li>
 				</ul>
 			</div>
 		</div>
@@ -335,7 +338,7 @@
 	</div>
 	<div class="overlaydata" id="overlaydata">
 		<div class="popupdata">
-			<h3 style="padding: 20px 0px 0px 20px; color: #000;">Company PhoneNumber</h3>
+			<h3 style="padding: 20px 0px 0px 20px; color: #000;">Get Phone-Number</h3>
 			<hr style="margin: 0;">
 			<form method="POST" enctype="multipart/form-data" action="/get_phone_number">
 				<div class="form-group">
@@ -353,7 +356,7 @@
 				<hr style="margin-top: 20px; margin-bottom: 20px;">
 
 				<div class="newbutton" style="padding: 0px 20px; text-align: right; margin-bottom: 10px;">
-					<a type="button" class="btn btn-dark border-0" onclick="closePopupdata()">
+					<a type="button" class="btn btn-danger border-0" onclick="closePopupdata()">
 						Close
 					</a>
 					<button type="submit" class="btn btn-primary" id="deletedatamain">Get</button>

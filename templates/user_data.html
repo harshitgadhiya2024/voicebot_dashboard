@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--Title-->
+    <title>Dailogwave - User Data</title>
+
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="author" content="DexignZone">
+    <meta name="robots" content="index, follow">
+
+    <!-- MOBILE SPECIFIC -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="static/assets/images/favicon.png">
+    <!-- Datatable -->
+    <link href="static/assets/vendor/datatables/css/jquery.dataTables.min.css" rel="stylesheet">
+    <!-- Custom Stylesheet -->
+    <link href="static/assets/vendor/datatables/responsive/responsive.css" rel="stylesheet">
+    <link href="static/assets/vendor/bootstrap-select/dist/css/bootstrap-select.min.css" rel="stylesheet">
+    <link class="main-css" href="static/assets/css/style.css" rel="stylesheet">
+    <style>
+        @media screen and (max-width:1024px) {
+            .brand-logo {
+                padding: 10px 20px !important;
+            }
+
+            .brand-logo img {
+                height: 60px !important;
+                margin-top: 50px !important;
+            }
+        }
+
+        @media screen and (max-width:768px) {
+            .brand-logo {
+                padding: 10px 20px !important;
+            }
+
+            .brand-logo img {
+                height: 50px !important;
+                margin-top: 0px !important;
+            }
+
+            .activedata {
+                color: #fff !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!--*******************
+        Preloader start
+    ********************-->
+    <div id="preloader">
+        <div class="sk-three-bounce">
+            <div class="sk-child sk-bounce1"></div>
+            <div class="sk-child sk-bounce2"></div>
+            <div class="sk-child sk-bounce3"></div>
+        </div>
+    </div>
+    <!--*******************
+        Preloader end
+    ********************-->
+
+
+    <!--**********************************
+        Main wrapper start
+    ***********************************-->
+    <div id="main-wrapper">
+
+        <!--**********************************
+            Nav header start
+        ***********************************-->
+        <div class="nav-header">
+            <a href="/dashboard" class="brand-logo" style="padding: 50px 20px;">
+                <img class="new" style="height: 200px; margin-top: 30px;" src="static/logo_white.png" alt="">
+            </a>
+
+            <div class="nav-control">
+                <div class="hamburger">
+                    <span class="line"></span><span class="line"></span><span class="line"></span>
+                </div>
+            </div>
+        </div>
+        <!--**********************************
+            Nav header end
+        ***********************************-->
+
+        <!--**********************************
+            Header start
+        ***********************************-->
+        <div class="header">
+            <div class="header-content">
+                <nav class="navbar navbar-expand">
+                    <div class="collapse navbar-collapse justify-content-between">
+                        <div class="header-left">
+                            <li class="nav-item dropdown notification_dropdown">
+                                <p class="btn btn-warning" style="margin: 0; margin-right: 20px;">Credits:
+                                    <b>{{points}}</b>
+                                </p>
+                            </li>
+                        </div>
+                        <ul class="navbar-nav header-right">
+                            <li class="nav-item dropdown notification_dropdown">
+                                <a class="nav-link bell dz-theme-mode" href="javascript:void(0);">
+                                    <i id="icon-light" class="fas fa-sun"></i>
+                                    <i id="icon-dark" class="fas fa-moon"></i>
+
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown header-profile">
+                                <a class="nav-link" role="button" data-bs-toggle="dropdown">
+                                    <div class="header-info">
+                                        <span class="text-black">Hello, <strong>{{username}}</strong></span>
+                                        <p class="fs-12 mb-0">User</p>
+                                    </div>
+                                    {% if company_logo %}
+                                    <img src="{{company_logo}}" width="20" alt="">
+                                    {% else %}
+                                    <p
+                                        style="padding: 10px 20px; background-color: #2BC155; border-radius: 50%; margin: 10px 0px; color: #fff; font-weight: 600; ">
+                                        {{username[0].title()}}</p>
+                                    {% endif %}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-end">
+                                    <a href="/logout" class="dropdown-item ai-icon">
+                                        <svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" class="text-danger"
+                                            width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                            <polyline points="16 17 21 12 16 7"></polyline>
+                                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                                        </svg>
+                                        <span class="ms-2">Logout </span>
+                                    </a>
+                                    <a href="/user_update_password" class="dropdown-item ai-icon">
+                                        <i class="fas fa-edit" style="color: red;"></i>
+                                        <span class="ms-2">Update Password </span>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <!--**********************************
+            Header end ti-comment-alt
+        ***********************************-->
+
+        <!--**********************************
+            Sidebar start
+        ***********************************-->
+        <div class="deznav">
+            <div class="deznav-scroll">
+                <ul class="metismenu" id="menu">
+                    <li>
+                        <a class="ai-icon" href="/dashboard">
+                            <i class="flaticon-381-networking"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li><a class="ai-icon" href="/user_data">
+                            <i class="fas fa-user" style="background-color: #1EAAE7; color: #fff;"></i>
+                            <span class="nav-text activedata" style="color: #1EAAE7;">User Data</span>
+                        </a>
+                    </li>
+                    <li><a class="ai-icon" href="/campaign_details">
+                            <i class="fas fa-tasks"></i>
+                            <span class="nav-text">Campaign Details</span>
+                        </a>
+                    </li>
+                    <!-- <li><a class="ai-icon" href="/bulk_calling">
+							<i class="fas fa-phone"></i>
+							<span class="nav-text">Bulk Auto Calls</span>
+						</a>
+					</li> -->
+                    <li><a class="ai-icon" href="/text_to_speech">
+                            <i class="fas fa-file-audio"></i>
+                            <span class="nav-text">Smart Audios</span>
+                        </a>
+                    </li>
+                    <li><a class="ai-icon" href="/upload_audio">
+                            <i class="fas fa-file-audio"></i>
+                            <span class="nav-text">Upload Audio</span>
+                        </a>
+                    </li>
+                    <li><a class="ai-icon" href="/user_points">
+                            <i class="fas fa-hand-point-up"></i>
+                            <span class="nav-text">Points History</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!--**********************************
+            Sidebar end
+        ***********************************-->
+
+        <!--**********************************
+            Content body start
+        ***********************************-->
+        <div class="content-body default-height">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-header" style="display: flex;">
+                                <h4 class="card-title">User Data</h4>
+                                <div class="right-btns" style="display: flex;">
+                                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                        data-bs-target="#exampleModal">
+                                        <i class="fa fa-cog"></i>
+                                    </button>
+                                    <div class="dropdown" style="margin-left: 10px;">
+                                        <button type="button" class="btn btn-primary dropdown-toggle"
+                                            data-bs-toggle="dropdown">
+                                            <i class="fa fa-user-group"></i> {{group_name}}
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            {% for var in all_group_names %}
+                                            <a class="dropdown-item" href="/user_data?group={{var}}">{{var}}</a>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <button type="button" style="margin-left: 10px;" class="btn btn-primary"
+                                        data-bs-toggle="modal" data-bs-target="#examplecallModal">
+                                        <i class="fa-solid fa-phone"></i> Smart Calls
+                                    </button>
+                                    <button type="button" style="margin-left: 10px;" class="btn btn-primary"
+                                        data-bs-toggle="modal" data-bs-target="#exampleemailModal">
+                                        <i class="fas fa-envelope"></i> Emails
+                                    </button>
+                                    <button type="button" style="margin-left: 10px;" data-bs-toggle="modal"
+                                        data-bs-target="#centermodal" class="btn btn-primary">
+                                        <i class="fa-solid fa-upload"></i> Import
+                                    </button>
+                                    <!-- <button class="btn btn-primary"><i
+                                            class="fa-solid fa-upload"></i> Import</button> -->
+                                    <button type="button" style="margin-left: 10px;" data-bs-toggle="modal"
+                                        data-bs-target="#centermodalexport" class="btn btn-primary"> <i
+                                            class="fas fa-download"></i> Export </button>
+                                    <button type="button" data-bs-toggle="modal" data-bs-target="#top-modal"
+                                        class="btn btn-danger" style="margin-left: 10px;">
+                                        <i class="fa-solid fa-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="col-md-auto" id="remove_tag" style="margin: 10px">
+                                        {% with messages = get_flashed_messages(with_categories=true)
+                                        %} {% if messages %} {% for category, message in messages %}
+                                        <div class="alert alert-{{category}} alert-dismissable" role="alert"
+                                            id="inside_alert">
+                                            {{message}}
+                                        </div>
+                                        {% endfor %} {% endif %} {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-responsive-md" id="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox" class="form-check-input"
+                                                        id="select-all-checkbox"></th>
+                                                {% if all_keys %}
+                                                {% for var in all_keys %}
+                                                <th>{{var}}</th>
+                                                {% endfor %}
+                                                {% else %}
+                                                <th>Compaign ID</th>
+                                                <th>Compaign Name</th>
+                                                <th>Total Calls</th>
+                                                <th>Total Answered</th>
+                                                <th>Total Busy</th>
+                                                <th>Detailed Report</th>
+                                                {% endif %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for vardata in customer_show_data %}
+                                            <tr>
+                                                <td><input type="checkbox" class="form-check-input data-checkbox"
+                                                        value="{{vardata[0]}}">
+                                                </td>
+                                                {% for data in vardata[1:] %}
+                                                <td style="font-size: 14px;">{{data}}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- <table id="responsiveTable" class="display responsive nowrap w-100">
+                                    <thead>
+                                        <tr>
+                                            <th><input type="checkbox" onclick="togglecheckbox()" id="select-all-checkbox"></th>
+                                            {% if all_keys %}
+                                            {% for var in all_keys %}
+                                            <th>{{var}}</th>
+                                            {% endfor %}
+                                            {% else %}
+                                            <th>Compaign ID</th>
+                                            <th>Compaign Name</th>
+                                            <th>Total Calls</th>
+                                            <th>Total Answered</th>
+                                            <th>Total Busy</th>
+                                            <th>Detailed Report</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for vardata in customer_show_data %}
+                                        <tr>
+                                            <td><input type="checkbox" class="data-checkbox" value="{{vardata[0]}}"></td>
+                                            {% for data in vardata[1:] %}
+                                            <td>{{data}}</td>
+                                            {% endfor %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--**********************************
+            Content body end
+        ***********************************-->
+
+        <!--**********************************
+           Support ticket button start
+        ***********************************-->
+
+        <!--**********************************
+           Support ticket button end
+        ***********************************-->
+
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Email Configuration</h5>
+                    </div>
+                    <div class="modal-body">
+                        <form action="/add_email_configuration" method="POST" enctype="multipart/form-data">
+                            <div class="row">
+                                <div class="col-12 col-sm-12">
+                                    <div class="form-group local-forms">
+                                        <label>Server UserName <span class="login-danger"
+                                                style="color: red;">*</span></label>
+                                        <input class="form-control" name="server_username" value="{{server_username}}"
+                                            type="text" required>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-12">
+                                    <div class="form-group local-forms">
+                                        <label>Server
+                                            Password <span class="login-danger" style="color: red;">*</span></label>
+                                        <input class="form-control pass-input" value="{{server_password}}"
+                                            name="server_password" type="password" required>
+                                        <span class="profile-views feather-eye toggle-password"></span>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-12">
+                                    <div class="form-group local-forms">
+                                        <label>Server
+                                            Host <span class="login-danger" style="color: red;">*</span></label>
+                                        <input class="form-control" name="server_host" value="{{server_host}}"
+                                            type="text" required>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-12">
+                                    <div class="form-group local-forms">
+                                        <label>Server
+                                            Port <span class="login-danger" style="color: red;">*</span></label>
+                                        <input class="form-control" value="{{server_port}}" name="server_port"
+                                            type="number" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                                    Close
+                                </button>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="exampleemailModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title" id="exampleemailModalLabel">Bulk Email Sending</h3>
+                    </div>
+                    <div class="modal-body">
+                        <center>
+                            <p style="color: red;">Dynamic variable only support from data columns</p>
+                        </center>
+                        <form>
+                            <div class="row">
+                                <div class="col-12 col-sm-12">
+                                    <div class="form-group local-forms">
+                                        <label>Subject <span class="login-danger" style="color: red;">*</span></label>
+                                        <input class="form-control" id="emailsubject" name="subject" type="text"
+                                            required>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-12">
+                                    <div class="form-group local-forms">
+                                        <label>Mail <span class="login-danger" style="color: red;">*</span></label>
+                                        <textarea rows="6" name="mail" id="subjectmail" class="form-control"
+                                            placeholder="Hello {name},"></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-12">
+                                    <div class="form-group local-forms">
+                                        <label>Attechment File</label>
+                                        <input type="file" id="fileInput" name="attachment_file" class="form-control"
+                                            multiple>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                                    Close
+                                </button>
+                                <button type="button" id="emailsubmit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="examplecallModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title" id="examplecallModalLabel">Bulk Smart Calls</h3>
+                    </div>
+                    <div class="modal-body">
+                        <center>
+                            <p style="color: red;">Dynamic variable only support from data columns</p>
+                        </center>
+                        <div class="default-tab">
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-bs-toggle="tab" href="#home">Simple Calls</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-bs-toggle="tab" href="#profile">Smart Calls</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="home" role="tabpanel">
+                                    <div class="pt-4">
+                                        <div class="mb-4">
+                                            <label class="form-label required">Campaign Name</label>
+                                            <input type="text" id="simplecampaignname" value="{{campaign_name}}" name="campaign_name"
+                                                class="form-control" placeholder="Space is not allowed on campaign name: e.g testing">
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="form-label required">Voice ID</label>
+                                            <select name="voiceid" id="simplevoiceid" class="default-select form-control wide">
+                                                <option selected>Select VoiceId</option>
+                                                {% for audio_id in all_audio_ids %}
+                                                <option>{{audio_id}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="form-label">Max Retry</label>
+                                            <input type="number" id="simplemaxretry" value="{{max_retry}}" name="max_retry"
+                                                class="form-control"
+                                                placeholder="Maximum call retry to unanswered call">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="profile">
+                                    <div class="pt-4">
+                                        <div class="mb-4">
+                                            <label class="form-label required">Smart Voice</label>
+                                            <select name="voiceid" id="smartvoiceselected" class="default-select form-control wide">
+                                                {% for audio_id in all_audios_data %}
+                                                <option>{{audio_id}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="mb-4">
+                                            <label class="form-label required">Text</label>
+                                            <textarea rows="3" name="text" id="smarttext" class="form-control"
+                                                placeholder="Hello {name},"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                        <button type="button" id="callssubmit" class="btn btn-primary">Run
+                            Campaign</button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="top-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-top">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="topModalLabel">
+                        Delete Records!
+                    </h4>
+                    <!-- <button type="button" class="btn-danger" data-bs-dismiss="modal" aria-label="Close"></button> -->
+                </div>
+                <div class="modal-body">
+                    <h5 style="
+                        text-align: left;
+                        font-weight: 400;
+                        font-size: 17px;
+                    ">
+                        To continue, Please confirm deletion of Selected records. This action will <span
+                            style="color: #e84646;">Permanently Remove</span> the data.
+                    </h5>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                    <button id="deletedatanew" type="button" class="btn btn-danger">Yes, delete
+                        it</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="centermodal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="topModalLabel">
+                        Import File
+                    </h4>
+                    <!-- <button type="button" class="btn-danger" data-bs-dismiss="modal" aria-label="Close"></button> -->
+                </div>
+                <form action="/import_data" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <p style="color: red;">group, phone and email column is mandatory</p>
+                        <div id="browsebutton">
+                            <input class="form-control" accept=".csv, .xlsx, .json" type="file" name="file"
+                                id="formFile" />
+                        </div>
+                    </div>
+                    <button type="button" style="margin-left: 30px; margin-bottom: 10px;"
+                        class="btn btn-primary dropdown-toggle show" data-bs-toggle="dropdown" aria-expanded="true">
+                        Sample Documents
+                    </button>
+                    <div class="dropdown-menu"
+                        style="position: absolute; inset: auto auto 0px 0px; margin: 0px; transform: translate3d(0px, -41.6px, 0px);"
+                        data-popper-placement="top-start">
+                        <a class="dropdown-item" href="/sample_document?type=excel">EXCEL</a>
+                        <a class="dropdown-item" href="/sample_document?type=csv">CSV</a>
+                        <a class="dropdown-item" href="/sample_document?type=json">JSON</a>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                        <input class="form-control btn-primary" type="submit" value="Upload"
+                            style="color: white; width: auto; height: 39px !important; font-size: 15px;" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="centermodalexport" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myCenterModalLabel">Download File</h4>
+                </div>
+                <div class="modal-body">
+                    <div style="text-align: left; display: flex; justify-content: center;">
+                        <div style="margin: 10px;">
+                            <img id="excelexport" src="/static/assets/Export_logo/excel_logo.png" alt="excel_logo"
+                                style="height: 50px;">
+                        </div>
+
+                        <div style="margin: 10px;">
+                            <!-- <a class="dropdown-item" href="/admin/export?panel=homework&type=csv"> -->
+                            <img id="csvexport" src="/static/assets/Export_logo/csv_logo.png" alt="csv_logo"
+                                style="height: 55px;">
+                            <!-- </a> -->
+                        </div>
+
+
+
+                        <div style="margin: 10px;">
+                            <!-- <a class="dropdown-item" href="/admin/export?panel=homework&type=json"> -->
+                            <img id="jsonexport" src="/static/assets/Export_logo/json_logo.png" alt="json_logo"
+                                style="height: 50px;">
+                            <!-- </a> -->
+                        </div>
+
+                    </div>
+
+                    <div>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">
+                            Close
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </div><!-- /.modal-content -->
+    </div>
+
+
+    </div>
+    <!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+
+    <!-- Required vendors -->
+    <script src="static/assets/vendor/global/global.min.js"></script>
+    <script src="static/assets/vendor/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="static/assets/vendor/datatables/responsive/responsive.js"></script>
+    <script src="static/assets/js/plugins-init/datatables.init.js"></script>
+    <script src="static/assets/vendor/bootstrap-select/dist/js/bootstrap-select.min.js"></script>
+    <script src="static/assets/js/custom.min.js"></script>
+    <script src="static/assets/js/demo.js"></script>
+    <!-- <script src="static/assets/js/styleSwitcher.js"></script> -->
+    <script>
+        function opencampaign(campaign_iddata) {
+            console.log("compaign_id is ", campaign_iddata);
+            window.location.href = `/campaign_info?campaign_id=${campaign_iddata}`
+        }
+        function exportdataplan(type, campaign_id) {
+            console.log(type, campaign_id);
+        }
+        async function getreport(campaign_id) {
+            // Define the API endpoint
+            const apiUrl = `/export_data?type=live&campaign_id=${campaign_id}`;
+
+            // Make a GET request
+            const response = await fetch(apiUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to submit form");
+            }
+            const responseData = await response.json();
+            console.log("API Response:", responseData);
+            var report_url = responseData["report_url"];
+            console.log(report_url);
+            if (report_url == null) {
+                window.location.reload();
+            } else {
+                window.location.href = report_url;
+                console.log("download report");
+            }
+        }
+    </script>
+</body>
+
+<!-- Mirrored from mophy.dexignzone.com/xhtml/table-bootstrap-basic.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 25 Apr 2024 07:17:24 GMT -->
+
+</html>

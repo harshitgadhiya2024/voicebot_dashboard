@@ -1,0 +1,16 @@
+[
+  {
+    "username": "hgadhiya01",
+    "name": "test1",
+    "email": "testemail@gmail.com",
+    "phone": "+918768787878",
+    "group": "user1"
+  },
+  {
+    "username": "hgadhiya03",
+    "name": "test2",
+    "email": "testemail1@gmail.com",
+    "phone": "+918768787678",
+    "group": "user1"
+  }
+]

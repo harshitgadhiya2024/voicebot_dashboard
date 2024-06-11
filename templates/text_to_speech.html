@@ -3,7 +3,7 @@
 
 <head>
     <!--Title-->
-    <title>Dailogwave - User Points</title>
+    <title>Dailogwave - Smart Audios</title>
 
     <!-- Meta -->
     <meta charset="utf-8">
@@ -180,8 +180,8 @@
 						</a>
 					</li> -->
 					<li><a class="ai-icon" href="/text_to_speech">
-							<i class="fas fa-file-audio"></i>
-							<span class="nav-text">Smart Audios</span>
+							<i class="fas fa-file-audio" style="background-color: #1EAAE7; color: #fff;"></i>
+							<span class="nav-text activedata" style="color: #1EAAE7;">Smart Audios</span>
 						</a>
 					</li>
 					<li><a class="ai-icon" href="/upload_audio">
@@ -190,8 +190,8 @@
 						</a>
 					</li>
 					<li><a class="ai-icon" href="/user_points">
-							<i class="fas fa-hand-point-up" style="background-color: #1EAAE7; color: #fff;"></i>
-							<span class="nav-text activedata" style="color: #1EAAE7;">Points History</span>
+							<i class="fas fa-hand-point-up"></i>
+							<span class="nav-text">Points History</span>
 						</a>
 					</li>
 				</ul>
@@ -210,7 +210,7 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-header">
-                                <h4 class="card-title">User Points</h4>
+                                <h4 class="card-title">Smart Audios</h4>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -229,19 +229,25 @@
                                 <table id="responsiveTable" class="display responsive nowrap w-100">
                                     <thead>
                                         <tr>
-                                            <th>Compaign ID</th>
-                                            <th>Answered Calls</th>
-                                            <th>Points</th>
-                                            <th>Remaining Points</th>
+                                            <th>Voice ID</th>
+                                            <th>Name</th>
+                                            <th>Category</th>
+                                            <th>Gender</th>
+                                            <th>Preview Url</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for var in all_user_id_data %}
+                                        {% for var in all_audios_data %}
                                         <tr>
-                                            <td>{{var["campaign_id"]}}</td>
-                                            <td>{{var["connected_calls"]}}</td>
-                                            <td>{{var["previous_points"]}}</td>
-                                            <td>{{var["remianing_points"]}}</td>
+                                            {% for new in var[:-1] %}
+                                            <td>{{new}}</td>
+                                            {% endfor %}
+                                            <td>
+                                                <audio controls>
+                                                    <source src='{{var[-1]}}' type="audio/mpeg">
+                                                    Your browser does not support the audio element.
+                                                </audio>
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     </tbody>
@@ -282,41 +288,6 @@
     <script src="static/assets/js/custom.min.js"></script>
     <script src="static/assets/js/demo.js"></script>
     <!-- <script src="static/assets/js/styleSwitcher.js"></script> -->
-    <script>
-        function opencampaign(campaign_iddata) {
-            console.log("compaign_id is ", campaign_iddata);
-            window.location.href = `/campaign_info?campaign_id=${campaign_iddata}`
-        }
-        function exportdataplan(type, campaign_id) {
-            console.log(type, campaign_id);
-        }
-
-        async function getreport(campaign_id) {
-            // Define the API endpoint
-            const apiUrl = `/export_data?type=live&campaign_id=${campaign_id}`;
-
-            // Make a GET request
-            const response = await fetch(apiUrl, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            });
-
-            if (!response.ok) {
-            throw new Error("Failed to submit form");
-            }
-            const responseData = await response.json();
-            console.log("API Response:", responseData);
-            var report_url = responseData["report_url"];
-            console.log(report_url);
-            window.location.href = report_url;
-            console.log("download report");
-            // window.location.href = "/campaign_details"
-        }
-    </script>
 </body>
-
-<!-- Mirrored from mophy.dexignzone.com/xhtml/table-bootstrap-basic.html by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 25 Apr 2024 07:17:24 GMT -->
 
 </html>

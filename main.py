@@ -24,6 +24,16 @@ import json, requests
 import pandas as pd
 import audioread
 from gtts import gTTS
+from flask_mail import Mail, Message
+from elevenlabs.client import ElevenLabs
+from elevenlabs import play, save
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+import os
+import concurrent.futures
 
 secreat_id = uuid.uuid4().hex
 
@@ -44,8 +54,13 @@ app.config['MAIL_USE_SSL'] = True
 app.config["userbase_recording"] = {}
 app.config['voice_folder'] = "static/uploaded_audio/"
 app.config["voice_details"] = {}
+app.config["smart_voicecall_details"] = {}
 app.config["EXPORT_UPLOAD_FOLDER"] = 'static/uploads/export_file/'
 app.config["user_token"] = {}
+app.config["email_configuration"] = {}
+app.config["IMPORT_UPLOAD_FOLDER"] = 'static/uploads/import_file/'
+
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
 
 # handling our application secure type like http or https
 secure_type = constant_data["secure_type"]
@@ -332,11 +347,11 @@ def forgot_password():
             email = request.form["email"]
             user_email_data = find_spec_data(app, db, "user_data", {"email": email})
             user_email_data = list(user_email_data)
-            user_id = user_email_data[0]["user_id"]
             if len(user_email_data)==0:
                 flash("Email does not exits Please try with different mail...", "danger")
                 return render_template("forgot-password.html")
             else:
+                user_id = user_email_data[0]["user_id"]
                 server_host = app.config['MAIL_SERVER']
                 server_port = app.config['MAIL_PORT']
                 server_username = app.config['MAIL_USERNAME']
@@ -759,11 +774,6 @@ def upload_audio_file():
 @token_required
 def upload_smart_audio_file():
     try:
-        language_mapping_dict = {
-            "English": "en",
-            "Hindi": "hi",
-            "Gujarati": "gu"
-        }
         login_dict = session.get("login_dict", {})
         username = login_dict["username"]
         last_number = 1
@@ -772,18 +782,35 @@ def upload_smart_audio_file():
         except:
             pass
 
-        speech_text = request.form['speech_text']
-        language = request.form['language']
-        language_code = language_mapping_dict[language]
+        speech_text = request.form['speechtext']
+        voicename = request.form['voicename']
 
-        tts = gTTS(text=speech_text, lang=language_code, slow=False)
+        coll_apis = db["apis"]
+        all_apis = coll_apis.find({})
+        all_apis = [var["api_key"] for var in all_apis]
+        flag = True
+        while flag:
+            try:
+                api_key = random.choice(all_apis)
+                client = ElevenLabs(
+                    api_key=api_key,  # Defaults to ELEVEN_API_KEY
+                )
+                flag = False
+            except:
+                pass
+
+        audio = client.generate(
+          text=speech_text,
+          voice=voicename,
+          model="eleven_multilingual_v2"
+        )
 
         # Saving the converted audio in a file
         userfile_name = username + str(last_number) + ".wav"
         filename = app.config["voice_folder"] + userfile_name
         app.config["userbase_recording"][username] = {}
         app.config["userbase_recording"][username]["last_number"] = last_number + 1
-        tts.save(filename)
+        save(audio, filename)
         print(filename)
         # filesize = get_file_size(filename)
         # print(filesize)
@@ -876,9 +903,35 @@ def upload_audio():
     try:
         login_dict = session.get("login_dict", {})
         username = login_dict["username"]
-        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+        user_id = login_dict["user_id"]
+        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": int(login_dict["user_id"])})
         all_audio_list = []
         data_status = "no_data"
+        coll_apis = db["apis"]
+        all_apis = coll_apis.find({})
+        all_apis = [var["api_key"] for var in all_apis]
+        user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+        user_points = list(user_points)
+        points = user_points[0]["points"]
+        flag = True
+        while flag:
+            try:
+                api_key = random.choice(all_apis)
+                client = ElevenLabs(
+                    api_key=api_key,  # Defaults to ELEVEN_API_KEY
+                )
+
+                response = client.voices.get_all()
+                flag = False
+            except:
+                pass
+
+        all_audios_data = []
+        for var in list(response.voices):
+            get_audio = dict(var)
+            voice_id = get_audio["name"]
+            all_audios_data.append(voice_id)
+
         for var in all_audio_data:
             if var["file_status"] == "active":
                 del var["_id"]
@@ -889,7 +942,7 @@ def upload_audio():
         print(data_status)
         print(all_audio_list)
 
-        return render_template("audio_data.html", all_audio_list=all_audio_list, data_status=data_status,username=username)
+        return render_template("audio_data.html",points=points,all_audios_data=all_audios_data, all_audio_list=all_audio_list, data_status=data_status,username=username)
 
     except Exception as e:
         app.logger.debug(f"error in upload audio route {e}")
@@ -1244,6 +1297,9 @@ def campaign_details():
         login_dict = session.get("login_dict", {})
         username = login_dict.get("username", "")
         user_id = login_dict.get("user_id", "")
+        user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+        user_points = list(user_points)
+        points = user_points[0]["points"]
         api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
         api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
         all_compaign_data = get_history_campaign_logs(api_user_id, api_token)
@@ -1275,7 +1331,7 @@ def campaign_details():
                 points = data_check[0]["points"]
 
         all_user_id_data = all_user_id_data[::-1]
-        return render_template("campaign_details.html", username=username,all_user_id_data=all_user_id_data)
+        return render_template("campaign_details.html",points=points, username=username,all_user_id_data=all_user_id_data)
 
     except Exception as e:
         app.logger.debug(f"error in campaign_details route: {e}")
@@ -1289,6 +1345,9 @@ def live_campaign_details():
         login_dict = session.get("login_dict", {})
         username = login_dict.get("username", "")
         user_id = login_dict.get("user_id", "")
+        user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+        user_points = list(user_points)
+        points = user_points[0]["points"]
         api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
         api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
         all_compaign_data = get_live_campaign_logs(api_user_id, api_token)
@@ -1320,7 +1379,7 @@ def live_campaign_details():
                 points = data_check[0]["points"]
 
         all_user_id_data = all_user_id_data[::-1]
-        return render_template("live_campaign_details.html", username=username,all_user_id_data=all_user_id_data)
+        return render_template("live_campaign_details.html",points=points, username=username,all_user_id_data=all_user_id_data)
 
     except Exception as e:
         app.logger.debug(f"error in campaign_details route: {e}")
@@ -1335,10 +1394,13 @@ def campaign_info():
         user_id = login_dict.get("user_id", "")
         username = login_dict.get("username", "")
         campaign_id = request.args.get("campaign_id", "")
+        user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+        user_points = list(user_points)
+        points = user_points[0]["points"]
         all_campaign_data = find_spec_data(app, db, "user_campaign_details", {"campaign_id": campaign_id})
         all_campaign_data = list(all_campaign_data)
         all_campaign_data = all_campaign_data[::-1]
-        return render_template("each_compaign.html", all_campaign_data=all_campaign_data, username=username)
+        return render_template("each_compaign.html",points=points, all_campaign_data=all_campaign_data, username=username)
         
     except Exception as e:
         app.logger.debug(f"error in upload audio route {e}")
@@ -1455,16 +1517,19 @@ def user_update_password():
         login_dict = session.get("login_dict", {})
         user_id = login_dict.get("user_id", "")
         username = login_dict.get("username", "")
+        user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+        user_points = list(user_points)
+        points = user_points[0]["points"]
         if request.method == "POST":
             password = request.form["password"]
             con_password = request.form["con_password"]
             if not password_validation(app=app, password=password):
                 flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
-                return render_template("user_update_password.html", password=password, con_password=con_password)
+                return render_template("user_update_password.html",points=points, password=password, con_password=con_password)
 
             if not password_validation(app=app, password=con_password):
                 flash("Please choose strong password. Add at least 1 special character, number, capitalize latter..", "danger")
-                return render_template("user_update_password.html", password=password, con_password=con_password)
+                return render_template("user_update_password.html",points=points, password=password, con_password=con_password)
 
             if password==con_password:
                 password = generate_password_hash(password)
@@ -1474,10 +1539,10 @@ def user_update_password():
                 return redirect(url_for('login', _external=True, _scheme=secure_type))
             else:
                 flash("Password or Confirmation Password Does Not Match. Please Enter Correct Details", "danger")
-                return render_template("user_update_password.html", password=password, con_password=con_password)
+                return render_template("user_update_password.html",points=points, password=password, con_password=con_password)
         else:
             session["user_id"] = user_id
-            return render_template("user_update_password.html", user_id=user_id, username=username)
+            return render_template("user_update_password.html",points=points, user_id=user_id, username=username)
 
     except Exception as e:
         app.logger.debug(f"Error in user update password route: {e}")
@@ -1502,13 +1567,627 @@ def user_points():
         for var in new_data:
             del var["_id"]
             all_user_id_data.append(var)
+        user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+        user_points = list(user_points)
+        points = user_points[0]["points"]
 
-        return render_template("user_points.html", user_id=user_id, username=username, all_user_id_data=all_user_id_data)
+        return render_template("user_points.html",points=points, user_id=user_id, username=username, all_user_id_data=all_user_id_data)
 
     except Exception as e:
         app.logger.debug(f"Error in user points route: {e}")
         flash("Please try again...","danger")
         return redirect(url_for('user_points', _external=True, _scheme=secure_type))
+
+@app.route("/user_data", methods=["GET", "POST"])
+@token_required
+def user_data():
+    """
+    Handling teacher register process
+    :return: teacher register template
+    """
+    try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
+        customer_data = find_all_data(app, db, "customer_data")
+        customer_data = list(customer_data)
+        group_name = request.args.get("group", "none")
+        all_group_names = [d["group"] for d in customer_data]
+        all_group_names = set(all_group_names)
+        user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+        user_points = list(user_points)
+        all_audio_data = find_spec_data(app, db, "audio_store", {"user_id": login_dict["user_id"]})
+        all_audio_ids = []
+        for var in all_audio_data:
+            if var["status"] == "active":
+                all_audio_ids.append(var["audio_id"])
+        points = user_points[0]["points"]
+        coll_apis = db["apis"]
+        all_apis = coll_apis.find({})
+        all_apis = [var["api_key"] for var in all_apis]
+        flag = True
+        while flag:
+            try:
+                api_key = random.choice(all_apis)
+                client = ElevenLabs(
+                    api_key=api_key,  # Defaults to ELEVEN_API_KEY
+                )
+
+                response = client.voices.get_all()
+                flag = False
+            except:
+                pass
+
+        all_audios_data = []
+        for var in list(response.voices):
+            get_audio = dict(var)
+            voice_id = get_audio["name"]
+            all_audios_data.append(voice_id)
+        if customer_data:
+            customer_show_data = []
+            if group_name=="none":
+                group_name = customer_data[0]["group"]
+            for var in customer_data:
+                del var["_id"]
+                if var["group"]==group_name:
+                    all_keys = list(var.keys())
+                    all_values = list(var.values())
+                    all_values.insert(0, var["phone"])
+                    customer_show_data.append(all_values)
+
+            set_email_config = session.get("set_email_config", "none")
+            if set_email_config!="none":
+                mail_dict = app.config["email_configuration"][str(user_id)]
+                return render_template("user_data.html",all_audios_data=all_audios_data,all_audio_ids=all_audio_ids,points=points,all_keys=all_keys,group_name=group_name,customer_show_data=customer_show_data, user_id=user_id, username=username,
+                                       server_username=mail_dict["server_username"], server_password=mail_dict["server_password"],all_group_names=all_group_names,
+                                       server_host=mail_dict["server_host"], server_port=mail_dict["server_port"])
+            else:
+                return render_template("user_data.html",all_audios_data=all_audios_data,all_audio_ids=all_audio_ids,points=points,all_keys=all_keys,group_name=group_name,all_group_names=all_group_names,customer_show_data=customer_show_data, user_id=user_id, username=username)
+        else:
+            set_email_config = session.get("set_email_config", "none")
+            if set_email_config != "none":
+                mail_dict = app.config["email_configuration"][str(user_id)]
+                return render_template("user_data.html",all_audios_data=all_audios_data,all_audio_ids=all_audio_ids,points=points, user_id=user_id, username=username,
+                                       server_username=mail_dict["server_username"],group_name="No Group",
+                                       server_password=mail_dict["server_password"],all_group_names=all_group_names,
+                                       server_host=mail_dict["server_host"], server_port=mail_dict["server_port"])
+            else:
+                return render_template("user_data.html",all_audios_data=all_audios_data,all_audio_ids=all_audio_ids,points=points,group_name="No Group",all_group_names=all_group_names, user_id=user_id, username=username)
+
+
+    except Exception as e:
+        app.logger.debug(f"Error in user points route: {e}")
+        flash("Please try again...","danger")
+        return redirect(url_for('user_data', _external=True, _scheme=secure_type))
+
+@app.route("/add_email_configuration", methods=["GET", "POST"])
+@token_required
+def add_email_configuration():
+    """
+    In this route we can handling student register process
+    :return: register template
+    """
+    try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
+        if request.method == "POST":
+            server_username = request.form["server_username"]
+            server_password = request.form["server_password"]
+            server_host = request.form["server_host"]
+            server_port = request.form["server_port"]
+            app.config["email_configuration"][str(user_id)] = {"server_username": server_username,
+                                                               "server_port": int(server_port),
+                                                               "server_host": server_host,
+                                                               "server_password": server_password}
+            session["set_email_config"] = "value"
+
+            flash("Email-Server configure successfully...", "success")
+            return redirect(url_for('user_data', _external=True, _scheme=secure_type))
+        else:
+            return redirect(url_for('user_data', _external=True, _scheme=secure_type))
+
+    except Exception as e:
+        app.logger.debug(f"Error in add_email_configuration route: {e}")
+        return redirect(url_for('user_data', _external=True, _scheme=secure_type))
+
+@app.route("/import_data", methods=["GET", "POST"])
+@token_required
+def import_data():
+    """
+    That funcation can use delete from student, teacher and admin from admin panel
+    """
+
+    try:
+        if request.method == "POST":
+            ## Getting file from request
+            file = request.files["file"]
+            ## Checking if file is selected, if yes, secure the filename
+            if file.filename != "":
+                ## Securing file and getting file extension
+                file_name = secure_filename(file.filename)
+                if not os.path.isdir(app.config['IMPORT_UPLOAD_FOLDER']):
+                    os.makedirs(app.config['IMPORT_UPLOAD_FOLDER'], exist_ok=True)
+                file_path = os.path.join(app.config['IMPORT_UPLOAD_FOLDER'], file_name)
+                file.save(file_path)
+                file_extension = os.path.splitext(file_name)[1]
+
+                if file_extension == ".xlsx":
+                    dataload_excel = pd.read_excel(file_path)
+                    json_record_data = dataload_excel.to_json(orient='records')
+                    json_data = json.loads(json_record_data)
+                elif file_extension == ".csv":
+                    dataload = pd.read_csv(file_path)
+                    json_record_data = dataload.to_json(orient='records')
+                    json_data = json.loads(json_record_data)
+                else:
+                    with open(file_path, encoding='utf-8') as json_file:
+                        json_data = json.load(json_file)
+
+                get_user_new_data = find_all_data(app, db, "customer_data")
+                get_user_data = []
+                for login_data in get_user_new_data:
+                    get_user_data.append(login_data["phone"])
+                flag = True
+                for record in json_data:
+                    try:
+                        group = record["group"]
+                        email = record["email"]
+                        phone = record["phone"]
+                        if phone not in get_user_data:
+                            try:
+                                id = record["_id"]
+                                del record["_id"]
+                            except:
+                                pass
+                            data_added(app, db, "customer_data", record)
+                    except:
+                        flag = False
+
+                if flag:
+                    flash("Data added successfully...", "success")
+                else:
+                    flash("group column required...", "warning")
+                return redirect(f'/user_data')
+            else:
+                flash("No file selected, please select a file", "danger")
+                return redirect(f'/user_data')
+
+    except Exception as e:
+        app.logger.debug(f"Error in import data from database: {e}")
+        return redirect(f'/user_data')
+    
+def export_panel_data(app, database_data, type):
+    """
+    export data for different format like csv, excel and csv
+
+    :param app: app-name
+    :param database_data: database data
+    :param type: excel, csv, json
+    :return: filename
+    """
+
+    try:
+        if type == "excel":
+            output_path = os.path.join(app.config["EXPORT_UPLOAD_FOLDER"], f"export_data_excel.xlsx")
+            df = pd.DataFrame(database_data)
+            df.to_excel(output_path, index=False)
+        elif type == "csv":
+            output_path = os.path.join(app.config["EXPORT_UPLOAD_FOLDER"], f"export_data_csv.csv")
+            df = pd.DataFrame(database_data)
+            df.to_csv(output_path, index=False)
+        else:
+            output_path = os.path.join(app.config["EXPORT_UPLOAD_FOLDER"], f"export_data_json.json")
+            with open(output_path, 'w') as json_file:
+                json.dump(database_data, json_file, indent=2)
+
+        return output_path
+
+    except Exception as e:
+        app.logger.debug(f"Error in export data from database: {e}")
+
+    
+@app.route("/exportdata", methods=["GET", "POST"])
+@token_required
+def exportdata():
+    """
+    That funcation can use delete from student, teacher and admin from admin panel
+    """
+
+    try:
+        data = json.loads(request.data)
+        type = data.get("type", "excel")
+        selectrecord = data.get("selectrecord", "csv")
+        res = find_all_data(app, db, "customer_data")
+        all_data = []
+        for each_res in res:
+            if each_res["phone"] in selectrecord:
+                del each_res["_id"]
+                all_data.append(each_res)
+        output_path = export_panel_data(app, all_data, type)
+        return jsonify({"output_path":output_path})
+
+
+    except Exception as e:
+        app.logger.debug(f"Error in export data from database: {e}")
+        flash("Please try again...", "danger")
+        return redirect(url_for('exportdata', _external=True, _scheme=secure_type))
+
+@app.route("/sample_document", methods=["GET", "POST"])
+@token_required
+def sample_document():
+    """
+    That funcation can use delete from student, teacher and admin from admin panel
+    """
+
+    try:
+        type = request.args.get("type")
+        if type=="excel":
+            output_path = os.path.abspath("static/sample_file/sample_excel.xlsx")
+        elif type=="csv":
+            output_path = os.path.abspath("static/sample_file/sample_csv.csv")
+        elif type=="json":
+            output_path = os.path.abspath("static/sample_file/sample_json.json")
+        return send_file(output_path, as_attachment=True)
+
+    except Exception as e:
+        app.logger.debug(f"Error in sample document data from database: {e}")
+        flash("Please try again...", "danger")
+        return redirect(url_for('sample_document', _external=True, _scheme=secure_type))
+
+@app.route("/deleteuserdata", methods=["GET", "POST"])
+@token_required
+def deleteuserdata():
+    """
+    That funcation can use delete from student, teacher and admin from admin panel
+    """
+
+    try:
+        data = json.loads(request.data)
+        selectrecord = data.get("selectrecord", "csv")
+        for var in selectrecord:
+            coll = db["customer_data"]
+            try:
+                phone = int(var)
+                coll.delete_one({"phone": phone})
+            except:
+                coll.delete_one({"phone": var})
+
+        flash("Delete data successfully...", "success")
+        return jsonify({"message": "done"})
+
+
+    except Exception as e:
+        app.logger.debug(f"Error in delete data from database: {e}")
+        flash("Please try again...", "danger")
+        return redirect(url_for('deleteuserdata', _external=True, _scheme=secure_type))
+
+@app.route("/text_to_speech", methods=["GET", "POST"])
+@token_required
+def text_to_speech():
+    """
+    Handling teacher register process
+    :return: teacher register template
+    """
+    try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
+        coll = db["apis"]
+        all_apis = coll.find({})
+        all_apis = [var["api_key"] for var in all_apis]
+        flag = True
+        user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+        user_points = list(user_points)
+        points = user_points[0]["points"]
+        while flag:
+            try:
+                api_key = random.choice(all_apis)
+                client = ElevenLabs(
+                    api_key=api_key,  # Defaults to ELEVEN_API_KEY
+                )
+
+                response = client.voices.get_all()
+                flag = False
+            except:
+                pass
+
+        all_audios_data = []
+        for var in list(response.voices):
+            get_audio = dict(var)
+            voice_id = get_audio["voice_id"]
+            name = get_audio["name"]
+            category = get_audio["category"]
+            gender = get_audio["labels"]["gender"]
+            preview_url = get_audio["preview_url"]
+            print(name, category, gender)
+            all_audios_data.append([voice_id, name, category, gender, preview_url])
+
+        return render_template("text_to_speech.html",points=points, all_audios_data=all_audios_data, user_id=user_id, username=username)
+
+    except Exception as e:
+        app.logger.debug(f"Error in user points route: {e}")
+        flash("Please try again...","danger")
+        return redirect(url_for('user_data', _external=True, _scheme=secure_type))
+
+def sending_email_mail(app, to_m, subject_main, body_text, html_text, attachment_all_file):
+    try:
+        mail = Mail(app)
+
+        msg = Message(subject_main, sender=app.config['MAIL_USERNAME'],
+                      recipients=to_m)
+        msg.html = html_text
+
+        for file_path in attachment_all_file:
+            with open(file_path, 'rb') as f:
+                filename = f.name.split("\\")[-1]
+                msg.attach(filename=filename, content_type='application/octet-stream', data=f.read())
+
+        try:
+            mail.send(msg)
+            app.logger.debug(f"Email sent successfully!")
+        except Exception as e:
+            app.logger.debug(f"Error in sending mail function: {e}")
+
+        return "success"
+
+    except Exception as e:
+        app.logger.debug(f"Error in sending mail function: {e}")
+        return "failure"
+
+def send_mail_user(email_sender, email_password, to_m, server, port, file_paths, subject, html_content):
+    try:
+        # Create the email
+        message = MIMEMultipart()
+        message['From'] = email_sender
+        message['To'] = to_m
+        message['Subject'] = subject
+
+        # Add body to the email
+        body = 'This is the body of the email'
+        message.attach(MIMEText(html_content, 'html'))
+
+        # Attach each file in the list
+        for file_path in file_paths:
+            try:
+                with open(file_path, 'rb') as attachment:
+                    # Create a MIMEBase object
+                    part = MIMEBase('application', 'octet-stream')
+                    part.set_payload(attachment.read())
+
+                # Encode the payload using base64 encoding
+                encoders.encode_base64(part)
+                filename = file_path.split("\\")[-1]
+                part.add_header(
+                    'Content-Disposition',
+                    f'attachment; filename= {filename}',
+                )
+
+                # Attach the file to the email
+                message.attach(part)
+            except Exception as e:
+                print(f'Failed to attach {file_path}: {e}')
+
+        # Connect to the SMTP server and send the email
+        try:
+            print("connect smtp")
+            with smtplib.SMTP(server, port) as server:
+                server.starttls()  # Secure the connection
+                server.login(email_sender, email_password)  # Log in to the server
+                print("connected")
+                server.sendmail(email_sender, to_m, message.as_string())  # Send the email
+            print('Email sent successfully!')
+        except Exception as e:
+            print(f'Failed to send email: {e}')
+
+    except Exception as e:
+        print(e)
+
+@app.route("/email_sending", methods=["GET", "POST"])
+@token_required
+def email_sending():
+    """
+    Handling teacher register process
+    :return: teacher register template
+    """
+    try:
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
+        if request.method == "POST":
+            subject_title = request.form["emailsubject"]
+            mail_format = request.form["subjectmail"]
+            selectrecord = request.form["selectrecord"]
+            res = find_all_data(app, db, "customer_data")
+
+            attachment_all_file = []
+            if 'file' in request.files:
+                images = request.files.getlist("file")
+                for file in images:
+                    if file.filename != '':
+                        attach_file_path = os.path.join("static/uploads", file.filename)
+                        attachment_all_file.append(attach_file_path)
+                        file.save(attach_file_path)
+
+            mail_split = mail_format.split("\n")
+            all_message_list = []
+            for message in mail_split:
+                if message != "\r":
+                    message = message.replace("\r", "")
+                    all_message_list.append(message)
+
+            html_format = ""
+            for msg in all_message_list:
+                html_format = html_format + "<p>" + msg + "</p>"
+
+            for each_res in res:
+                del each_res["_id"]
+                if each_res["phone"] in selectrecord:
+                    all_keys = list(each_res.keys())
+                    for key in all_keys:
+                        html_format = html_format.replace("{"+key+"}", each_res[key])
+
+                    all_configuration = app.config["email_configuration"][str(user_id)]
+                    executor.submit(send_mail_user, all_configuration["server_username"], all_configuration["server_password"], each_res["email"], all_configuration["server_host"], all_configuration["server_port"], attachment_all_file, subject_title, html_format)
+                    # send_mail_user(all_configuration["server_username"], all_configuration["server_password"], each_res["email"], all_configuration["server_host"], all_configuration["server_port"], attachment_all_file, subject_title, html_format)
+
+            flash("Campaign start successfully...", "danger")
+            return jsonify({"message": "done"})
+
+    except Exception as e:
+        app.logger.debug(f"Error in user points route: {e}")
+        flash("Please try again...","danger")
+        return redirect(url_for('user_data', _external=True, _scheme=secure_type))
+
+def move_call(phone):
+    try:
+        value = random.randint(111111111111,999999999999)
+        refernce_id = "test_"+str(value)
+        url = "https://obd-api.myoperator.co/obd-api-v1"
+
+        payload = json.dumps({
+            "company_id": "664f0f2ecb1f7268",
+            "secret_token": "f2517fe344bad049067105d94703b2b37d95b9c2de388a53fc429bff6e02b971",
+            "type": "2",
+            "number": phone,
+            "public_ivr_id": "6667fe83b1ac9842",
+            "reference_id": refernce_id,
+            "region": "Guj",
+            "caller_id": "<caller id number of a call>",
+            "group": "<group of a dedicated number>"
+        })
+        headers = {
+            'x-api-key': 'oomfKA3I2K6TCJYistHyb7sDf0l0F6c8AZro5DJh',
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        print(response.text)
+        return {"message": "done"}
+
+    except Exception as e:
+        print(e)
+
+@app.route("/smart_bulk_calling", methods=["GET", "POST"])
+@token_required
+def smart_bulk_calling():
+    """
+    Handling teacher register process
+    :return: teacher register template
+    """
+    try:
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
+        if request.method == "POST":
+            simplecampaignname = request.form["simplecampaignname"]
+            simplemaxretry = request.form["simplemaxretry"]
+            smarttext = request.form["smarttext"]
+            simplevoiceid = request.form["simplevoiceid"]
+            smartvoiceselected = request.form["smartvoiceselected"]
+            selectrecord = request.form["selectrecord"]
+            if type(selectrecord)==list:
+                pass
+            else:
+                selectrecord = [selectrecord]
+            res = find_all_data(app, db, "customer_data")
+            if simplevoiceid.lower() == "select voiceid" and smarttext=="":
+                flash("Please select atleast 1 calling service", "danger")
+                return jsonify({"message": "error"})
+            elif simplevoiceid.lower() == "select voiceid":
+                try:
+                    userid_dict = app.config["smart_voicecall_details"][user_id]
+                except:
+                    app.config["smart_voicecall_details"][user_id] = {}
+                for each_res in res:
+                    del each_res["_id"]
+                    if each_res["phone"] in selectrecord:
+                        phone = each_res["phone"]
+                        all_keys = list(each_res.keys())
+                        for key in all_keys:
+                            smarttext = smarttext.replace("{" + key + "}", each_res[key])
+                        try:
+                            if "91" == str(phone)[:2]:
+                                phone = "+"+str(phone)
+                                app.config["smart_voicecall_details"][user_id][phone]={"text": smarttext, "voice": smartvoiceselected}
+                            elif "+91" not in str(phone):
+                                phone = "+91"+str(phone)
+                                app.config["smart_voicecall_details"][user_id][phone] = {"text": smarttext, "voice": smartvoiceselected}
+                            else:
+                                app.config["smart_voicecall_details"][user_id][str(phone)] = {"text": smarttext, "voice": smartvoiceselected}
+                        except:
+                            app.config["smart_voicecall_details"][user_id][str(phone)]={"text": smarttext, "voice": smartvoiceselected}
+
+                        executor.submit(move_call, phone)
+
+                flash("Your compaign run successfully...", "success")
+                return jsonify({"message": "done"})
+            else:
+                audio_user_data = find_spec_data(app, db, "audio_store", {"audio_id": int(simplevoiceid)})
+                audio_user_data = list(audio_user_data)
+                app.logger.debug(f"data of audio user: {audio_user_data}")
+                points_min = audio_user_data[0]["credits"]
+                allnumbers = []
+                for var in selectrecord:
+                    var = str(var)
+                    var = var.replace("+91", "")
+                    if len(var)>10:
+                        if "91" == var[:2]:
+                            var = var[2:]
+                        var = var.replace("+91", "")
+                    allnumbers.append(var)
+                selectrecord = allnumbers
+                df = pd.DataFrame({"number": selectrecord})
+                value = random.randint(111,999999999999)
+                file_name = "record_call_"+ str(value)+".csv"
+                filepath = f"static/upload/{file_name}"
+                df.to_csv(filepath, index=False)
+                app.logger.debug("file save successfully")
+                exten = file_name.split(".")[-1]
+                api_user_id = app.config["user_token"].get(login_dict["user_id"], {}).get("session_userid", "nothing")
+                api_token = app.config["user_token"].get(login_dict["user_id"], {}).get("access_token", "nothing")
+                status, baseid, message = get_baseid(api_user_id, file_name, filepath, api_token)
+                if status:
+                    all_numbers = selectrecord
+                    user_points = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+                    user_points = list(user_points)
+                    points = user_points[0]["points"]
+                    required_points = len(all_numbers) * int(points_min)
+                    if required_points > points:
+                        flash("Please recharge your account, don't enough points you have...", "warning")
+                        return jsonify({"message": "done"})
+                    else:
+                        status_api, campaignId, message = bulk_calling_with_api(api_user_id, api_token, simplecampaignname,
+                                                                                baseid, simplevoiceid, simplemaxretry)
+                        app.logger.debug("completed")
+                        if status_api:
+                            all_points_data = find_spec_data(app, db, "points_mapping", {"user_id": user_id})
+                            all_points_data = list(all_points_data)
+                            campaigns_total = all_points_data[0]["campaigns"]
+                            totalcalls = all_points_data[0]["calls"]
+
+                            points_data_mapping = {"user_id": user_id, "campaign_id": str(campaignId), "points_min": 1,
+                                                   "points_cut": False}
+                            data_added(app, db, "data_points_mapping", points_data_mapping)
+                            update_mongo_data(app, db, "points_mapping", {"user_id": user_id},
+                                              {"campaigns": int(campaigns_total) + 1,
+                                               "calls": int(totalcalls) + len(all_numbers)})
+
+                            flash(message, "success")
+                            return jsonify({"message": "done"})
+                        else:
+                            flash(message, "danger")
+                            return jsonify({"message": "done"})
+                else:
+                    flash("Please try again..", "danger")
+                    return {"message": "error"}
+
+    except Exception as e:
+        app.logger.debug(f"Error in user points route: {e}")
+        flash("Please try again...","danger")
+        return redirect(url_for('user_data', _external=True, _scheme=secure_type))
 
 
 if __name__ == '__main__':

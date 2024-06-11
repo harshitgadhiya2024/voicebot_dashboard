@@ -99,7 +99,11 @@
                 <nav class="navbar navbar-expand">
                     <div class="collapse navbar-collapse justify-content-between">
                         <div class="header-left">
-
+                            <li class="nav-item dropdown notification_dropdown">
+                                <p class="btn btn-warning" style="margin: 0; margin-right: 20px;">Credits:
+                                    <b>{{points}}</b>
+                                </p>
+                            </li>
                         </div>
                         <ul class="navbar-nav header-right">
                             <li class="nav-item dropdown notification_dropdown">
@@ -155,31 +159,32 @@
         <div class="deznav">
             <div class="deznav-scroll">
                 <ul class="metismenu" id="menu">
-                    <li><a class="ai-icon" href="/dashboard">
+                    <li>
+                        <a class="ai-icon" href="/dashboard">
                             <i class="flaticon-381-networking"></i>
                             <span class="nav-text">Dashboard</span>
                         </a>
                     </li>
+                    <li><a class="ai-icon" href="/user_data">
+                            <i class="fas fa-user"></i>
+                            <span class="nav-text">User Data</span>
+                        </a>
+                    </li>
                     <li><a class="ai-icon" href="/campaign_details">
-                            <i class="fas fa-tasks"></i>
-                            <span class="nav-text">Campaign Details</span>
+                            <i class="fas fa-tasks" style="background-color: #1EAAE7; color: #fff;"></i>
+                            <span class="nav-text activedata" style="color: #1EAAE7;">Campaign Details</span>
                         </a>
                     </li>
-                    <li><a class="ai-icon" href="/live_campaign_details">
-                            <i class="fas fa-stream" style="background-color: #1EAAE7; color: #fff;"></i>
-                            <span class="nav-text activedata" style="color: #1EAAE7;">Live Campaign</span>
+                    <!-- <li><a class="ai-icon" href="/bulk_calling">
+							<i class="fas fa-phone"></i>
+							<span class="nav-text">Bulk Auto Calls</span>
+						</a>
+					</li> -->
+                    <li><a class="ai-icon" href="/text_to_speech">
+                            <i class="fas fa-file-audio"></i>
+                            <span class="nav-text activedata">Smart Audios</span>
                         </a>
                     </li>
-                    <li><a class="ai-icon" href="/bulk_calling">
-                            <i class="fas fa-phone"></i>
-                            <span class="nav-text">Bulk Auto Calls</span>
-                        </a>
-                    </li>
-                    <!-- <li><a class="ai-icon" href="/smart_calling">
-                            <i class="fas fa-mobile"></i>
-                            <span class="nav-text">Smart Voice Calls</span>
-                        </a>
-                    </li> -->
                     <li><a class="ai-icon" href="/upload_audio">
                             <i class="fas fa-file-audio"></i>
                             <span class="nav-text">Upload Audio</span>
@@ -187,7 +192,7 @@
                     </li>
                     <li><a class="ai-icon" href="/user_points">
                             <i class="fas fa-hand-point-up"></i>
-                            <span class="nav-text">User Points</span>
+                            <span class="nav-text">Points History</span>
                         </a>
                     </li>
                 </ul>
@@ -211,8 +216,16 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="card">
-                            <div class="card-header">
-                                <h4 class="card-title">Live Compaign</h4>
+                            <div class="card-header" style="display: flex;">
+                                <h4 class="card-title">Live Compaign Logs</h4>
+                                <div class="button_group" style="display: flex;">
+                                    <a class="btn btn-primary" style="margin-left: 10px;" href="/live_campaign_details"
+                                        style="cursor: pointer;">Live campaign Logs</a>
+                                    <a class="btn btn-primary" style="margin-left: 10px;" href="/campaign_details"
+                                        style="cursor: pointer;">campaign Logs</a>
+                                    <a class="btn btn-primary" style="margin-left: 10px;" style="cursor: pointer;">Smart
+                                        campaign Logs</a>
+                                </div>
                             </div>
                             <div class="row">
                                 <div class="col-sm-12">
@@ -248,7 +261,8 @@
                                             <td>{{var["total_answered"]}}</td>
                                             <td>{{var["total_busy"]}}</td>
                                             <td>
-                                                <a class="btn btn-primary" onclick="getreport('{{var['campaign_id']}}')" style="cursor: pointer;">Download</a>
+                                                <a class="btn btn-primary" onclick="getreport('{{var['campaign_id']}}')"
+                                                    style="cursor: pointer;">Download</a>
                                                 <!-- <div class="basic-dropdown">
                                                     <div class="dropdown">
                                                         <button type="button" class="btn btn-primary dropdown-toggle"
@@ -316,24 +330,28 @@
 
             // Make a GET request
             const response = await fetch(apiUrl, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
             });
 
             if (!response.ok) {
-            throw new Error("Failed to submit form");
+                throw new Error("Failed to submit form");
             }
-            const responseData = await response.json();
-            console.log("API Response:", responseData);
-            var report_url = responseData["report_url"];
-            console.log(report_url);
-            if (report_url == null) {
+            try {
+                const responseData = await response.json();
+                console.log("API Response:", responseData);
+                var report_url = responseData["report_url"];
+                console.log(report_url);
+                if (report_url == null) {
+                    window.location.reload();
+                } else {
+                    window.location.href = report_url;
+                    console.log("download report");
+                }
+            } catch {
                 window.location.reload();
-            } else {
-                window.location.href = report_url;
-                console.log("download report");
             }
         }
     </script>
