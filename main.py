@@ -538,9 +538,11 @@ def inputnodeapi():
         timestamp = request.args.get("timestamp", "")
         clid = request.args.get("clid", "")
         input = request.args.get("input", "")
+        smart_voicecall_details=app.config["smart_voicecall_details"]
+        get_text = smart_voicecall_details.get(clid, "")
         response = {
             "action": "tts",
-            "value": "welcome to our company"
+            "value": get_text
          }
         return response
 
@@ -2113,16 +2115,14 @@ def smart_bulk_calling():
                         try:
                             if "91" == str(phone)[:2]:
                                 phone = "+"+str(phone)
-                                app.config["smart_voicecall_details"][user_id][phone]={"text": smarttext, "voice": smartvoiceselected}
                             elif "+91" not in str(phone):
                                 phone = "+91"+str(phone)
-                                app.config["smart_voicecall_details"][user_id][phone] = {"text": smarttext, "voice": smartvoiceselected}
-                            else:
-                                app.config["smart_voicecall_details"][user_id][str(phone)] = {"text": smarttext, "voice": smartvoiceselected}
                         except:
-                            app.config["smart_voicecall_details"][user_id][str(phone)]={"text": smarttext, "voice": smartvoiceselected}
+                            pass
 
                         executor.submit(move_call, phone)
+                        phone = phone.replace("+91", "")
+                        app.config["smart_voicecall_details"][phone] = {"text": smarttext, "voice": smartvoiceselected}
 
                 flash("Your compaign run successfully...", "success")
                 return jsonify({"message": "done"})
