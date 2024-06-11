@@ -538,7 +538,9 @@ def inputnodeapi():
         timestamp = request.args.get("timestamp", "")
         clid = request.args.get("clid", "")
         input = request.args.get("input", "")
+        app.logger.debug(clid)
         smart_voicecall_details=app.config["smart_voicecall_details"]
+        app.logger.debug(smart_voicecall_details)
         get_text = smart_voicecall_details.get(clid, "")
         response = {
             "action": "tts",
