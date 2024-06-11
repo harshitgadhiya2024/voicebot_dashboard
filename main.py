@@ -63,7 +63,7 @@ executor = concurrent.futures.ThreadPoolExecutor(max_workers=20)
 secure_type = constant_data["secure_type"]
 
 # logger & MongoDB connection
-# logger_con(app=app)
+logger_con(app=app)
 client = mongo_connect(app=app)
 db = client["voicebot"]
 
@@ -1996,6 +1996,7 @@ def email_sending():
             subject_title = request.form["emailsubject"]
             mail_format = request.form["subjectmail"]
             selectrecord = request.form["selectrecord"]
+            selectrecord = selectrecord.split(",")
             res = find_all_data(app, db, "customer_data")
 
             attachment_all_file = []
@@ -2025,11 +2026,15 @@ def email_sending():
                     for key in all_keys:
                         html_format = html_format.replace("{"+key+"}", each_res[key])
 
-                    all_configuration = app.config["email_configuration"][str(user_id)]
-                    executor.submit(send_mail_user, all_configuration["server_username"], all_configuration["server_password"], each_res["email"], all_configuration["server_host"], all_configuration["server_port"], attachment_all_file, subject_title, html_format)
+                    try:
+                        all_configuration = app.config["email_configuration"][str(user_id)]
+                        executor.submit(send_mail_user, all_configuration["server_username"], all_configuration["server_password"], each_res["email"], all_configuration["server_host"], all_configuration["server_port"], attachment_all_file, subject_title, html_format)
+                    except:
+                        flash("Please set mail configuration...", "danger")
+                        return jsonify({"message": "error"})
                     # send_mail_user(all_configuration["server_username"], all_configuration["server_password"], each_res["email"], all_configuration["server_host"], all_configuration["server_port"], attachment_all_file, subject_title, html_format)
 
-            flash("Campaign start successfully...", "danger")
+            flash("Campaign start successfully...", "success")
             return jsonify({"message": "done"})
 
     except Exception as e:
@@ -2088,7 +2093,7 @@ def smart_bulk_calling():
             if type(selectrecord)==list:
                 pass
             else:
-                selectrecord = [selectrecord]
+                selectrecord = selectrecord.split(",")
             res = find_all_data(app, db, "customer_data")
             if simplevoiceid.lower() == "select voiceid" and smarttext=="":
                 flash("Please select atleast 1 calling service", "danger")

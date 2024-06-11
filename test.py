@@ -32,14 +32,14 @@ client = ElevenLabs(
 # #
 
 
-voice = client.clone(
-    name="Harshit",
-    description="An old American male voice with a slight hoarseness in his throat. Perfect for news", # Optional
-    files=["output1.wav", "output2.wav", "output3.mp3"],
-)
-
-audio = client.generate(text="Hi! I'm a cloned voice!", voice=voice)
-save(audio, "new_")
+# voice = client.clone(
+#     name="Harshit",
+#     description="An old American male voice with a slight hoarseness in his throat. Perfect for news", # Optional
+#     files=["output1.wav", "output2.wav", "output3.mp3"],
+# )
+#
+# audio = client.generate(text="Hi! I'm a cloned voice!", voice=voice)
+# save(audio, "new_")
 # play(audio)
 
 
