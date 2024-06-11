@@ -45,3 +45,4 @@ pyasn1
 pyasn1-modules
 ipython
 aiohttp
+elevenlabs

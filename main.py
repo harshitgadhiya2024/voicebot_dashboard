@@ -12,8 +12,6 @@ import jwt, re
 from flask import (flash, Flask, redirect, render_template, request,
                    session, url_for, send_file, jsonify, send_from_directory)
 from flask_cors import CORS
-from flask_mail import Mail
-from string import ascii_uppercase
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -23,7 +21,6 @@ from operations.mongo_connection import (mongo_connect, data_added, find_all_dat
 import json, requests
 import pandas as pd
 import audioread
-from gtts import gTTS
 from flask_mail import Mail, Message
 from elevenlabs.client import ElevenLabs
 from elevenlabs import play, save

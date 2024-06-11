@@ -9,7 +9,7 @@ RUN apt-get update && \
 
 COPY . /app
 
-RUN pip3 install --no-cache-dir -r req.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 EXPOSE 80
 
