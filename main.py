@@ -1591,7 +1591,7 @@ def user_data():
         login_dict = session.get("login_dict", {})
         user_id = login_dict.get("user_id", "")
         username = login_dict.get("username", "")
-        customer_data = find_all_data(app, db, "customer_data")
+        customer_data = find_spec_data(app, db, "customer_data", {"user_id": str(user_id)})
         customer_data = list(customer_data)
         group_name = request.args.get("group", "none")
         all_group_names = [d["group"] for d in customer_data]
@@ -1701,6 +1701,9 @@ def import_data():
     """
 
     try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
         if request.method == "POST":
             ## Getting file from request
             file = request.files["file"]
@@ -1742,6 +1745,7 @@ def import_data():
                                 del record["_id"]
                             except:
                                 pass
+                            record["user_id"] = str(user_id)
                             data_added(app, db, "customer_data", record)
                     except:
                         flag = False
@@ -1797,10 +1801,13 @@ def exportdata():
     """
 
     try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
         data = json.loads(request.data)
         type = data.get("type", "excel")
         selectrecord = data.get("selectrecord", "csv")
-        res = find_all_data(app, db, "customer_data")
+        res = find_spec_data(app, db, "customer_data", {"user_id": str(user_id)})
         all_data = []
         for each_res in res:
             if each_res["phone"] in selectrecord:
@@ -1845,15 +1852,18 @@ def deleteuserdata():
     """
 
     try:
+        login_dict = session.get("login_dict", {})
+        user_id = login_dict.get("user_id", "")
+        username = login_dict.get("username", "")
         data = json.loads(request.data)
         selectrecord = data.get("selectrecord", "csv")
         for var in selectrecord:
             coll = db["customer_data"]
             try:
                 phone = int(var)
-                coll.delete_one({"phone": phone})
+                coll.delete_one({"phone": phone, "user_id": str(user_id)})
             except:
-                coll.delete_one({"phone": var})
+                coll.delete_one({"phone": var, "user_id": str(user_id)})
 
         flash("Delete data successfully...", "success")
         return jsonify({"message": "done"})
