@@ -542,7 +542,8 @@ def inputnodeapi():
 
         smart_voicecall_details=app.config["smart_voicecall_details"]
         app.logger.debug(smart_voicecall_details)
-        get_text = smart_voicecall_details.get(clid, "")
+        get_text = smart_voicecall_details.get(clid, "Hello, kaise ho?").get("text")
+        voice_id = smart_voicecall_details.get(clid, "").get("voice")
         response = {
             "action": "tts",
             "value": get_text
