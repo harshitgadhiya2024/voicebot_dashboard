@@ -23,12 +23,21 @@ client = ElevenLabs(
 #     #   voice=name,
 #     #   model="eleven_multilingual_v2"
 #     # )
-#     # audio = client.generate(
-#     #   text="जय स्वामीनारायण. मै तरवड़ा गुरुकुल से हिरेन सर बोल रहा हू।",
-#     #   voice=name,
-#     #   model="eleven_multilingual_v2"
-#     # )
-#     # play(audio)
+import random
+audio = client.generate(
+            text="जय स्वामीनारायण. मै तरवड़ा गुरुकुल से हिरेन सर बोल रहा हू।",
+            voice="Drew",
+            model="eleven_multilingual_v2"
+        )
+value = random.randint(111111,9999999999999)
+filename = f"generated_{value}.mp3"
+save(audio, f"static/generated_text_speech/{filename}")
+# audio = client.generate(
+#   text="जय स्वामीनारायण. मै तरवड़ा गुरुकुल से हिरेन सर बोल रहा हू।",
+#   voice="Drew",
+#   model="eleven_multilingual_v2"
+# )
+# save(audio, "dtaa.mp3")
 # #
 
 
