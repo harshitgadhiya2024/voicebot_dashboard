@@ -2168,6 +2168,8 @@ def smart_bulk_calling():
 
                         executor.submit(move_call, phone)
                         phone = phone.replace("+91", "")
+                        app.logger.debug(f"set config for a call: {app.config['smart_voicecall_details'][phone]}")
+                        app.logger.debug(f"set config value for a call: {smarttext, smartvoiceselected}")
                         app.config["smart_voicecall_details"][phone] = {"text": smarttext, "voice": smartvoiceselected}
 
                 flash("Your compaign run successfully...", "success")
