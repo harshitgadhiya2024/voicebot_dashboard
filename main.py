@@ -548,34 +548,34 @@ def inputnodeapi():
         #     "action": "tts",
         #     "value": get_text
         #  }
-        # coll_apis = db["apis"]
-        # all_apis = coll_apis.find({})
-        # all_apis = [var["api_key"] for var in all_apis]
-        # flag = True
-        # while flag:
-        #     try:
-        #         api_key = random.choice(all_apis)
-        #         client_elevenlabs = ElevenLabs(
-        #             api_key=api_key,  # Defaults to ELEVEN_API_KEY
-        #         )
-        #         flag = False
-        #     except:
-        #         pass
-        #
-        # audio = client_elevenlabs.generate(
-        #     text=get_text,
-        #     voice=voice_id,
-        #     model="eleven_multilingual_v2"
-        # )
-        # value = random.randint(111111,9999999999999)
-        # filename = f"generated_{value}.mp3"
-        # get_path = os.path.abspath(app.config['voice_folder'])
-        # filepath = os.path.join(get_path, filename)
-        # save(audio, filepath)
+        coll_apis = db["apis"]
+        all_apis = coll_apis.find({})
+        all_apis = [var["api_key"] for var in all_apis]
+        flag = True
+        while flag:
+            try:
+                api_key = random.choice(all_apis)
+                client_elevenlabs = ElevenLabs(
+                    api_key=api_key,  # Defaults to ELEVEN_API_KEY
+                )
+                flag = False
+            except:
+                pass
+
+        audio = client_elevenlabs.generate(
+            text=get_text,
+            voice=voice_id,
+            model="eleven_multilingual_v2"
+        )
+        value = random.randint(111111,9999999999999)
+        filename = f"generated_{value}.mp3"
+        get_path = os.path.abspath(app.config['voice_folder'])
+        filepath = os.path.join(get_path, filename)
+        save(audio, filepath)
 
         response = {
-            "action": "tts",
-            "value": get_text
+            "action": "url",
+            "value": f"http://dailogwave.site/download/{filename}"
         }
 
         return response
