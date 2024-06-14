@@ -548,34 +548,34 @@ def inputnodeapi():
         #     "action": "tts",
         #     "value": get_text
         #  }
-        coll_apis = db["apis"]
-        all_apis = coll_apis.find({})
-        all_apis = [var["api_key"] for var in all_apis]
-        flag = True
-        while flag:
-            try:
-                api_key = random.choice(all_apis)
-                client_elevenlabs = ElevenLabs(
-                    api_key=api_key,  # Defaults to ELEVEN_API_KEY
-                )
-                flag = False
-            except:
-                pass
-
-        audio = client_elevenlabs.generate(
-            text=get_text,
-            voice=voice_id,
-            model="eleven_multilingual_v2"
-        )
-        value = random.randint(111111,9999999999999)
-        filename = f"generated_{value}.mp3"
-        get_path = os.path.abspath(app.config['voice_folder'])
-        filepath = os.path.join(get_path, filename)
-        save(audio, filepath)
+        # coll_apis = db["apis"]
+        # all_apis = coll_apis.find({})
+        # all_apis = [var["api_key"] for var in all_apis]
+        # flag = True
+        # while flag:
+        #     try:
+        #         api_key = random.choice(all_apis)
+        #         client_elevenlabs = ElevenLabs(
+        #             api_key=api_key,  # Defaults to ELEVEN_API_KEY
+        #         )
+        #         flag = False
+        #     except:
+        #         pass
+        #
+        # audio = client_elevenlabs.generate(
+        #     text=get_text,
+        #     voice=voice_id,
+        #     model="eleven_multilingual_v2"
+        # )
+        # value = random.randint(111111,9999999999999)
+        # filename = f"generated_{value}.mp3"
+        # get_path = os.path.abspath(app.config['voice_folder'])
+        # filepath = os.path.join(get_path, filename)
+        # save(audio, filepath)
 
         response = {
-            "action": "url",
-            "value": f"http://dailogwave.site/download/{filename}"
+            "action": "tts",
+            "value": "નમસ્તે, હું સ્કૂલના શિક્ષક Batuk bhai બોલી રહ્યો છું. આ કૉલ તમારા બાળક student name ના સાપ્તાહિક પરીક્ષાના પરિણામની જાણ કરવા માટે છે. student name એ આ અઠવાડિયાની પરીક્ષામાં આ મુજબના માર્ક્સ મેળવ્યા છે: જેમાં ગણિત માં ૪૦ માંથી maths માર્ક, physics માં ૪૦ માંથી physics માર્ક, chemestry માં ૪૦ માંથી chemestry માર્ક મેળવ્યા છે  અને કુલ ટોટલ માર્ક total માંથી total gain marks મેળવ્યા છે. કૃપા કરીને આ માહિતીને ધ્યાનમાં લેતા તેમના અભ્યાસ પર ધ્યાન આપશો. જો તમને કોઈ પ્રશ્નો હોય, તો કૃપા કરીને સ્કૂલ સાથે સંપર્ક કરો. આભાર"
         }
 
         return response
