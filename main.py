@@ -585,7 +585,7 @@ def inputnodeapi():
         app.logger.debug(f"error in inputnodeapi: {e}")
         response = {
             "action": "tts",
-            "value": "welcome to our company"
+            "value": "નમસ્તે, હું સ્કૂલના શિક્ષક Batuk bhai બોલી રહ્યો છું. આ કૉલ તમારા બાળક student name ના સાપ્તાહિક પરીક્ષાના પરિણામની જાણ કરવા માટે છે. student name એ આ અઠવાડિયાની પરીક્ષામાં આ મુજબના માર્ક્સ મેળવ્યા છે: જેમાં ગણિત માં ૪૦ માંથી maths માર્ક, physics માં ૪૦ માંથી physics માર્ક, chemestry માં ૪૦ માંથી chemestry માર્ક મેળવ્યા છે  અને કુલ ટોટલ માર્ક total માંથી total gain marks મેળવ્યા છે. કૃપા કરીને આ માહિતીને ધ્યાનમાં લેતા તેમના અભ્યાસ પર ધ્યાન આપશો. જો તમને કોઈ પ્રશ્નો હોય, તો કૃપા કરીને સ્કૂલ સાથે સંપર્ક કરો. આભાર"
         }
         return response
 
