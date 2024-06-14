@@ -2173,7 +2173,7 @@ def smart_bulk_calling():
                             app.logger.debug(f"set config value for a call: {smarttext, smartvoiceselected}")
                             app.config["smart_voicecall_details"][phone] = {"text": smarttext, "voice": smartvoiceselected}
                     except Exception as e:
-                        app.logger.debug("Error on set config value: {e}")
+                        app.logger.debug(f"Error on set config value: {e}")
                 flash("Your compaign run successfully...", "success")
                 return jsonify({"message": "done"})
             else:
