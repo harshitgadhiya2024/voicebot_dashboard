@@ -2152,26 +2152,28 @@ def smart_bulk_calling():
                 except:
                     app.config["smart_voicecall_details"][user_id] = {}
                 for each_res in res:
-                    del each_res["_id"]
-                    if str(each_res["phone"]) in selectrecord:
-                        phone = str(each_res["phone"])
-                        all_keys = list(each_res.keys())
-                        for key in all_keys:
-                            smarttext = smarttext.replace("{" + key + "}", str(each_res[key]))
-                        try:
-                            if "91" == str(phone)[:2]:
-                                phone = "+"+str(phone)
-                            elif "+91" not in str(phone):
-                                phone = "+91"+str(phone)
-                        except:
-                            pass
+                    try:
+                        del each_res["_id"]
+                        if str(each_res["phone"]) in selectrecord:
+                            phone = str(each_res["phone"])
+                            all_keys = list(each_res.keys())
+                            for key in all_keys:
+                                smarttext = smarttext.replace("{" + key + "}", str(each_res[key]))
+                            try:
+                                if "91" == str(phone)[:2]:
+                                    phone = "+"+str(phone)
+                                elif "+91" not in str(phone):
+                                    phone = "+91"+str(phone)
+                            except:
+                                pass
 
-                        executor.submit(move_call, phone)
-                        phone = phone.replace("+91", "")
-                        app.logger.debug(f"set config for a call: {app.config['smart_voicecall_details'][phone]}")
-                        app.logger.debug(f"set config value for a call: {smarttext, smartvoiceselected}")
-                        app.config["smart_voicecall_details"][phone] = {"text": smarttext, "voice": smartvoiceselected}
-
+                            executor.submit(move_call, phone)
+                            phone = phone.replace("+91", "")
+                            app.logger.debug(f"set config for a call: {app.config['smart_voicecall_details'][phone]}")
+                            app.logger.debug(f"set config value for a call: {smarttext, smartvoiceselected}")
+                            app.config["smart_voicecall_details"][phone] = {"text": smarttext, "voice": smartvoiceselected}
+                    except Exception as e:
+                        app.logger.debug("Error on set config value: {e}")
                 flash("Your compaign run successfully...", "success")
                 return jsonify({"message": "done"})
             else:
