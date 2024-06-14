@@ -581,6 +581,8 @@ def inputnodeapi():
         return response
 
     except Exception as e:
+        print(f"error in inputnodeapi: {e}")
+        app.logger.debug(f"error in inputnodeapi: {e}")
         response = {
             "action": "tts",
             "value": "welcome to our company"
