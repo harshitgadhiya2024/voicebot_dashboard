@@ -2,9 +2,7 @@ from elevenlabs.client import ElevenLabs
 from elevenlabs import play, save
 import os
 
-client = ElevenLabs(
-  api_key="3ec564f4c92a2876c6111a5bfbda785c", # Defaults to ELEVEN_API_KEY
-)
+
 
 # response = client.voices.get_all()
 # # audio = client.generate(text="Hello there!", voice=response.voices[0])
@@ -23,15 +21,107 @@ client = ElevenLabs(
 #     #   voice=name,
 #     #   model="eleven_multilingual_v2"
 #     # )
-import random
-audio = client.generate(
-            text="जय स्वामीनारायण. मै तरवड़ा गुरुकुल से हिरेन सर बोल रहा हू।",
-            voice="Drew",
-            model="eleven_multilingual_v2"
+data = [{
+  "api_key": "d2651a626925b19b51e05dcebe8e55de",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "b8ee48ae1a4e9dac3863df94b352a112",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "e7db30899929abc5e2686b49df484cad",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "3ec564f4c92a2876c6111a5bfbda785c",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "7a7a282c029efd6607497c3d14bfdc0f",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "7e76e8641d6c5bfbc50509c8c2565a38",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "13a57f9730e84268af6250acb5c2a5d2",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "15d9f9d4d851637296eddb8808d520e3",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "10ca77b01a67f8ba61eedfad867f8cb8",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "91063bdfd92b1392b32b43ad97cd5d43",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "7849e55b1eb033ba0f27aaf09f8562d2",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "08a0ec7acaf27b57e24ec0617a9d3667",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "d2651a626925b19b51e05dcebe8e55de",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "1186ffd2e692cc92bbe0187d202de81d",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "359ebd8bc4c51251e5892c81027b3c90",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "bb76e1faea3f20c59636ebfb26d6b1b5",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "94271c227fdaffd4a32022adc0c571df",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "920128f27a8f648fff7237262e15e672",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "7c02da8f141f20da2e88d208d94d5d18",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "793ecf8e57bb8557513a0b93233fc4d0",
+  "insert_date": "28-05-2024"
+},
+{
+  "api_key": "db2c3d306b5701ebc5a6aab6f3947456",
+  "insert_date": "28-05-2024"
+}]
+for var in data:
+    api_key = var["api_key"]
+    try:
+        client = ElevenLabs(
+          api_key=api_key, # Defaults to ELEVEN_API_KEY
         )
-value = random.randint(111111,9999999999999)
-filename = f"generated_{value}.mp3"
-save(audio, f"static/generated_text_speech/{filename}")
+        audio = client.generate(
+                    text="जय स्वामीनारायण. मै तरवड़ा गुरुकुल से हिरेन सर बोल रहा हू।",
+                    voice="Drew",
+                    model="eleven_multilingual_v2"
+                )
+    except Exception as e:
+        print(f"event_key: {api_key}")
+
+# value = random.randint(111111,9999999999999)
+# filename = f"generated_{value}.mp3"
+# save(audio, f"static/generated_text_speech/{filename}")
 # audio = client.generate(
 #   text="जय स्वामीनारायण. मै तरवड़ा गुरुकुल से हिरेन सर बोल रहा हू।",
 #   voice="Drew",

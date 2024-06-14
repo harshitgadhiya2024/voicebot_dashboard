@@ -2151,11 +2151,11 @@ def smart_bulk_calling():
                     app.config["smart_voicecall_details"][user_id] = {}
                 for each_res in res:
                     del each_res["_id"]
-                    if each_res["phone"] in selectrecord:
-                        phone = each_res["phone"]
+                    if str(each_res["phone"]) in selectrecord:
+                        phone = str(each_res["phone"])
                         all_keys = list(each_res.keys())
                         for key in all_keys:
-                            smarttext = smarttext.replace("{" + key + "}", each_res[key])
+                            smarttext = smarttext.replace("{" + key + "}", str(each_res[key]))
                         try:
                             if "91" == str(phone)[:2]:
                                 phone = "+"+str(phone)
